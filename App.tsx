@@ -1,12 +1,18 @@
-import { View, Text } from 'react-native'
 import React from 'react'
+import HomeScreen from './src/screens/homes/HomeScreen'
+import { StatusBar } from 'react-native'
 
 const App = () => {
   return (
-    <View>
-      <Text>App</Text>
-    </View>
-  )
+    <>
+      <StatusBar
+        translucent
+        barStyle={'light-content'}
+        backgroundColor="transparent"
+      />
+      <HomeScreen />
+    </>
+  );
 }
 
 export default App
