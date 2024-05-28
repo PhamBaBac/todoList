@@ -11,6 +11,8 @@ import { Element4, Notification, SearchNormal, Tag } from 'iconsax-react-native'
 import { colors } from '../../constants/colors';
 import SpaceComponent from '../../components/SpaceComponent';
 import TagComponent from '../../components/TagComponent';
+import CicularComponent from '../../components/CicularComponent';
+
 
 const HomeScreen = () => {
   return (
@@ -49,6 +51,7 @@ const HomeScreen = () => {
             </View>
             <View>
               <TextComponent text="CircleChar" />
+              <CicularComponent value={80} />
             </View>
           </RowComponent>
         </CardComponent>
