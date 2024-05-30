@@ -18,7 +18,7 @@ import ProgressBarComponent from '../../components/ProgressBarComponent';
 import { fontFamilies } from '../../constants/fontFamilies';
 
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}: any) => {
   return (
     <View style={{flex: 1}}>
       <Container isScroll>
@@ -132,7 +132,7 @@ const HomeScreen = () => {
         }}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => {}}
+          onPress={() => navigation.navigate('AddNewTaskScreen')}
           style={[
             globalStyles.row,
             {
