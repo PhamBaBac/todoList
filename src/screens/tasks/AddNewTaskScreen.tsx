@@ -39,8 +39,6 @@ const AddNewTaskScreen = () => {
           title="Title"
           allowClear
           placeholder="Title of task"
-          multible
-          numberOfLine={2}
         />
         <InputComponent
           value={taskDetail.desctiption}
