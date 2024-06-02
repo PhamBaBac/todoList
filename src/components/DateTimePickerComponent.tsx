@@ -25,7 +25,7 @@ const DateTimePickerComponent = (props: Props) => {
   return (
     <>
       <View style={{marginBottom: 16}}>
-        {title && <TitleComponent text={title} />}
+        {title && <TitleComponent text={title} flex={0} />}
         <RowComponent
           onPress={() => setIsVisibleModalDateTime(true)}
           styles={[

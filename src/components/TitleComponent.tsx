@@ -1,4 +1,4 @@
-import {View, Text} from 'react-native';
+import {View, Text, TextStyle, StyleProp} from 'react-native';
 import React from 'react';
 import TextComponent from './TextComponent';
 import {fontFamilies} from '../constants/fontFamilies';
@@ -8,10 +8,12 @@ interface Props {
   font?: string;
   size?: number;
   color?: string;
+  flex?: number;
+  styles?: StyleProp<TextStyle>;
 }
 
 const TitleComponent = (props: Props) => {
-  const {text, font, size, color} = props;
+  const {text, font, size, color, flex,styles} = props;
 
   return (
     <TextComponent
@@ -19,6 +21,8 @@ const TitleComponent = (props: Props) => {
       font={font ?? fontFamilies.semiBold}
       color={color}
       text={text}
+      flex={flex ?? 1}
+      styles={styles}
     />
   );
 };

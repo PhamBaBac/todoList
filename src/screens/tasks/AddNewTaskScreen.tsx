@@ -31,7 +31,7 @@ const AddNewTaskScreen = () => {
       console.log(taskDetail);
     };
   return (
-    <Container back title="Add new task">
+    <Container back title="Add new task" >
       <SectionComponent>
         <InputComponent
           value={taskDetail.title}

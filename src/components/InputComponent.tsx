@@ -1,10 +1,11 @@
-import React, {ReactNode} from 'react';
-import {TextInput, TouchableOpacity, View} from 'react-native';
+import React, {ReactNode, useState} from 'react';
+import {KeyboardTypeOptions, TextInput, TouchableOpacity, View} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {colors} from '../constants/colors';
 import {globalStyles} from '../styles/globalStyles';
 import RowComponent from './RowComponent';
 import TitleComponent from './TitleComponent';
+import { Eye, EyeSlash } from 'iconsax-react-native';
 
 interface Props {
   value: string;
@@ -16,6 +17,8 @@ interface Props {
   allowClear?: boolean;
   multible?: boolean;
   numberOfLine?: number;
+  type?: KeyboardTypeOptions;
+  isPassword?: boolean;
 }
 
 const InputComponent = (props: Props) => {
@@ -29,20 +32,23 @@ const InputComponent = (props: Props) => {
     allowClear,
     multible,
     numberOfLine,
+    isPassword,
+    type,
   } = props;
+  const [showPass, setShowPass] = useState(false);
 
   return (
     <View style={{marginBottom: 16}}>
-      {title && <TitleComponent text={title} />}
+      {title && <TitleComponent text={title} flex={0} />}
       <RowComponent
         styles={[
           globalStyles.inputContainer,
           {
             marginTop: title ? 8 : 0,
             minHeight: multible && numberOfLine ? 32 * numberOfLine : 54,
-            paddingVertical: 10,
+            paddingVertical: 4,
             paddingHorizontal: 10,
-            alignItems: 'flex-start',
+            // alignItems: 'flex-start',
           },
         ]}>
         {prefix && prefix}
@@ -63,6 +69,8 @@ const InputComponent = (props: Props) => {
             onChangeText={val => onChange(val)}
             multiline={multible}
             numberOfLines={numberOfLine}
+            secureTextEntry={isPassword ? !showPass : false}
+            keyboardType={type}
           />
         </View>
         {affix && affix}
@@ -70,6 +78,16 @@ const InputComponent = (props: Props) => {
         {allowClear && value && (
           <TouchableOpacity onPress={() => onChange('')}>
             <AntDesign name="close" size={20} color={colors.white} />
+          </TouchableOpacity>
+        )}
+
+        {isPassword && (
+          <TouchableOpacity onPress={() => setShowPass(!showPass)}>
+            {showPass ? (
+              <EyeSlash size={20} color={colors.desc} />
+            ) : (
+              <Eye size={20} color={colors.desc} />
+            )}
           </TouchableOpacity>
         )}
       </RowComponent>

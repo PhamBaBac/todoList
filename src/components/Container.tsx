@@ -37,7 +37,7 @@ const Container = (props: Props) => {
             <TextComponent
               flex={0}
               font={fontFamilies.bold}
-              size={16}
+              size={26}
               text={title}
               styles={{textAlign: 'center', marginLeft: back ? -24 : 0}}
             />
