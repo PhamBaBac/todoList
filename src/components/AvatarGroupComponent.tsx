@@ -1,55 +1,86 @@
-import {View, Text, Image} from 'react-native';
-import React from 'react';
-import RowComponent from './RowComponent';
+import React, {useEffect, useState} from 'react';
+import {Image, Text, View} from 'react-native';
 import {colors} from '../constants/colors';
-import TextComponent from './TextComponent';
 import {fontFamilies} from '../constants/fontFamilies';
-interface Props{
+import RowComponent from './RowComponent';
+import TextComponent from './TextComponent';
+import firestore from '@react-native-firebase/firestore';
+import {globalStyles} from '../styles/globalStyles';
+import AvatarComponent from '../components/AvatarComponent';
+
+interface Props {
   uids: string[];
 }
 
 const AvatarGroupComponent = (props: Props) => {
   const {uids} = props;
-  const uidsLength = 10;
-  const uriImage =
-    'https://phambabac.s3.ap-southeast-1.amazonaws.com/202d0b66-4573-4bab-804b-99dd4547b858.jpg';
+
+  const [usersName, setUsersName] = useState<
+    {
+      name: string;
+      imgUrl: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    getUserAvata();
+  }, [uids]);
+
+  const getUserAvata = async () => {
+    const items: any = [...usersName];
+    uids.forEach(async id => {
+      await firestore()
+        .doc(`users/${id}`)
+        .get()
+        .then((snap: any) => {
+          if (snap.exists) {
+            items.push({
+              name: snap.data().displayName,
+              imgUrl: snap.data().imgUrl ?? '',
+            });
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    });
+    setUsersName(items);
+  };
+
   const imageStyle = {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     borderRadius: 100,
-    marginRight: -10,
-    zIndex: 0,
     borderWidth: 2,
     borderColor: colors.white,
   };
   return (
-    <RowComponent  styles={{justifyContent: 'flex-start'}}>
-      {Array.from({length: uidsLength}).map(
-        (_, index) =>
-          index < 3 && (
-            <Image key={index} source={{uri: uriImage}} style={imageStyle} />
-          ),
+    <RowComponent styles={{justifyContent: 'flex-start'}}>
+      {uids.map(
+        (item, index) =>
+          index < 3 && <AvatarComponent uid={item} index={index} key={item} />,
       )}
-      {uidsLength > 3 && (
+
+      {uids.length > 3 && (
         <View
+          key={'total'}
           style={[
             imageStyle,
             {
-              backgroundColor: colors.blue,
+              backgroundColor: 'coral',
               justifyContent: 'center',
               alignItems: 'center',
-              zIndex: 1,
+              borderWidth: 1,
+              marginLeft: -10,
             },
           ]}>
           <TextComponent
             flex={0}
-            text={`+${uidsLength - 3 > 9 ? 9 : uidsLength - 3}`}
-            color={colors.white}
-            size={16}
             styles={{
-              lineHeight: 22,
+              lineHeight: 19,
             }}
             font={fontFamilies.semiBold}
+            text={`+${uids.length - 3 > 9 ? 9 : uids.length - 3}`}
           />
         </View>
       )}

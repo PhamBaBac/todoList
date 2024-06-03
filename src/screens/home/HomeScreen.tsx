@@ -81,7 +81,7 @@ const HomeScreen = ({navigation}: any) => {
               style={{
                 flex: 1,
               }}>
-              <TextComponent text="Hi, Jason" />
+              <TextComponent text={`Hi! ${user?.email}`} />
               <TitleComponent text="Be Productive today" />
             </View>
             <TouchableOpacity onPress={handleSingout}>
@@ -188,29 +188,31 @@ const HomeScreen = ({navigation}: any) => {
                     </CardImageComponent>
                   )}
                   <SpaceComponent height={16} />
-                  <CardImageComponent color="rgba(18, 118, 22, 0.9)">
-                    <View style={[globalStyles.iconContainer]}>
-                      <Edit2 size={24} color={colors.desc} />
-                    </View>
-                    <TitleComponent text={tasks[2].title} />
-                    <TextComponent text={tasks[2].description} />
-                    {tasks[2].progress && (
-                      <ProgressBarComponent
-                        percent="40%"
-                        color="#A2F068"
-                        size="large"
-                      />
-                    )}
-                    {tasks[2].dueDate && (
-                      <TextComponent
-                        text={`Due ${HandleDateTime.DateString(
-                          tasks[2].dueDate.toDate(),
-                        )}`}
-                        size={12}
-                        color={colors.desc}
-                      />
-                    )}
-                  </CardImageComponent>
+                  {tasks[2] && (
+                    <CardImageComponent color="rgba(18, 118, 22, 0.9)">
+                      <View style={[globalStyles.iconContainer]}>
+                        <Edit2 size={24} color={colors.desc} />
+                      </View>
+                      <TitleComponent text={tasks[2].title} />
+                      <TextComponent text={tasks[2].description} />
+                      {tasks[2].progress && (
+                        <ProgressBarComponent
+                          percent="40%"
+                          color="#A2F068"
+                          size="large"
+                        />
+                      )}
+                      {tasks[2].dueDate && (
+                        <TextComponent
+                          text={`Due ${HandleDateTime.DateString(
+                            tasks[2].dueDate.toDate(),
+                          )}`}
+                          size={12}
+                          color={colors.desc}
+                        />
+                      )}
+                    </CardImageComponent>
+                  )}
                 </View>
               </RowComponent>
             </SectionComponent>
@@ -237,7 +239,16 @@ const HomeScreen = ({navigation}: any) => {
               <SpaceComponent height={46} />
             </SectionComponent>
           </>
-        ) : <></>}
+        ) : (
+          <View
+            style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+            <TextComponent
+              styles={{textTransform: 'uppercase'}}
+              text="No tasks found"
+              size={28}
+            />
+          </View>
+        )}
       </Container>
       <View
         style={{
