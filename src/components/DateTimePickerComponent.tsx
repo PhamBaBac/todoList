@@ -8,12 +8,13 @@ import {ArrowDown2} from 'iconsax-react-native';
 import {globalStyles} from '../styles/globalStyles';
 import SpaceComponent from './SpaceComponent';
 import DatePicker from 'react-native-date-picker';
+import ButtonComponent from './ButtonComponent';
 
 interface Props {
   type?: 'date' | 'time' | 'datetime';
   title?: string;
   placeholder?: string;
-  selected?: Date;
+  selected?: any;
   onSelect: (val: Date) => void;
 }
 
@@ -67,7 +68,7 @@ const DateTimePickerComponent = (props: Props) => {
               padding: 20,
               borderRadius: 20,
             }}>
-            <TitleComponent text="Date time picker" color={colors.blue} />
+            <TitleComponent text="Date time picker" color={colors.blue} flex={0} />
             <View>
               <DatePicker
                 mode={type ? type : 'datetime'}
@@ -77,15 +78,16 @@ const DateTimePickerComponent = (props: Props) => {
               />
             </View>
             <SpaceComponent height={20} />
-            <Button
-              title="Comfirm"
+            <ButtonComponent
+              text="Comfirm"
               onPress={() => {
                 onSelect(date);
                 setIsVisibleModalDateTime(false);
               }}
             />
-            <Button
-              title="Close"
+            <SpaceComponent height={12} />
+            <ButtonComponent
+              text="Close"
               onPress={() => setIsVisibleModalDateTime(false)}
             />
           </View>

@@ -1,11 +1,16 @@
 import React, {ReactNode, useState} from 'react';
-import {KeyboardTypeOptions, TextInput, TouchableOpacity, View} from 'react-native';
+import {
+  KeyboardTypeOptions,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {colors} from '../constants/colors';
 import {globalStyles} from '../styles/globalStyles';
 import RowComponent from './RowComponent';
 import TitleComponent from './TitleComponent';
-import { Eye, EyeSlash } from 'iconsax-react-native';
+import {Eye, EyeSlash} from 'iconsax-react-native';
 
 interface Props {
   value: string;
@@ -15,7 +20,7 @@ interface Props {
   prefix?: ReactNode;
   affix?: ReactNode;
   allowClear?: boolean;
-  multible?: boolean;
+  multiple?: boolean;
   numberOfLine?: number;
   type?: KeyboardTypeOptions;
   isPassword?: boolean;
@@ -30,7 +35,7 @@ const InputComponent = (props: Props) => {
     prefix,
     affix,
     allowClear,
-    multible,
+    multiple,
     numberOfLine,
     isPassword,
     type,
@@ -45,7 +50,7 @@ const InputComponent = (props: Props) => {
           globalStyles.inputContainer,
           {
             marginTop: title ? 8 : 0,
-            minHeight: multible && numberOfLine ? 32 * numberOfLine : 54,
+            minHeight: multiple && numberOfLine ? 32 * numberOfLine : 54,
             paddingVertical: 4,
             paddingHorizontal: 10,
             // alignItems: 'flex-start',
@@ -67,7 +72,7 @@ const InputComponent = (props: Props) => {
             placeholderTextColor={'#676767'}
             value={value}
             onChangeText={val => onChange(val)}
-            multiline={multible}
+            multiline={multiple}
             numberOfLines={numberOfLine}
             secureTextEntry={isPassword ? !showPass : false}
             keyboardType={type}
@@ -84,9 +89,9 @@ const InputComponent = (props: Props) => {
         {isPassword && (
           <TouchableOpacity onPress={() => setShowPass(!showPass)}>
             {showPass ? (
-              <EyeSlash size={20} color={colors.desc} />
-            ) : (
               <Eye size={20} color={colors.desc} />
+            ) : (
+              <EyeSlash size={20} color={colors.desc} />
             )}
           </TouchableOpacity>
         )}

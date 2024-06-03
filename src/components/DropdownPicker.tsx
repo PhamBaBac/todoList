@@ -17,11 +17,11 @@ interface Props {
   items: SelectModel[];
   selected?: string[];
   onSelect: (val: string[]) => void;
-  multible?: boolean;
+  multiple?: boolean;
 }
 
 const DropdownPicker = (props: Props) => {
-  const {title, items, selected, onSelect, multible} = props;
+  const {title, items, selected, onSelect, multiple} = props;
 
   const [isVisible, setIsVisible] = useState(false);
   const [searckKey, setSearckKey] = useState('');
@@ -45,7 +45,7 @@ const DropdownPicker = (props: Props) => {
   }, [searckKey]);
 
   const handleSelectItem = (id: string) => {
-    if (multible) {
+    if (multiple) {
       const data = [...dataSelected];
       const index = data.findIndex(element => element === id);
 

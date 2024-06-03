@@ -4,8 +4,12 @@ import RowComponent from './RowComponent';
 import {colors} from '../constants/colors';
 import TextComponent from './TextComponent';
 import {fontFamilies} from '../constants/fontFamilies';
+interface Props{
+  uids: string[];
+}
 
-const AvatarGroupComponent = () => {
+const AvatarGroupComponent = (props: Props) => {
+  const {uids} = props;
   const uidsLength = 10;
   const uriImage =
     'https://phambabac.s3.ap-southeast-1.amazonaws.com/202d0b66-4573-4bab-804b-99dd4547b858.jpg';
@@ -19,7 +23,7 @@ const AvatarGroupComponent = () => {
     borderColor: colors.white,
   };
   return (
-    <RowComponent styles={{justifyContent: 'flex-start'}}>
+    <RowComponent  styles={{justifyContent: 'flex-start'}}>
       {Array.from({length: uidsLength}).map(
         (_, index) =>
           index < 3 && (
