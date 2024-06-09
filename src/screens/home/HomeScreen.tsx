@@ -32,10 +32,11 @@ const HomeScreen = ({navigation}: any) => {
   const user = auth().currentUser;
   const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskModel[]>([]);
-  console.log('tasks', tasks);
+  const [urgentTasks, setUrgentTasks] = useState<TaskModel[]>([]);
 
   useEffect(() => {
     getTasks();
+    getUrgetTasks();
   }, []);
 
   const getTasks = () => {
@@ -61,6 +62,28 @@ const HomeScreen = ({navigation}: any) => {
         }
       });
   };
+
+ const getUrgetTasks = () => {
+   const fillter = firestore()
+     .collection('tasks')
+     .where('isUrgent', '==', true)
+     .orderBy('createdAt', 'desc') 
+     .limit(3);
+   fillter.onSnapshot(snap => {
+     if (snap && !snap.empty) {
+       const items: TaskModel[] = [];
+       snap.forEach((item: any) => {
+         items.push({
+           id: item.id,
+           ...item.data(),
+         });
+       });
+       setUrgentTasks(items);
+     } else {
+       console.log('No urgent tasks found');
+     }
+   });
+ };
 
   const handleSingout = async () => {
     await auth().signOut();
@@ -138,17 +161,18 @@ const HomeScreen = ({navigation}: any) => {
                         <Edit2 size={24} color={colors.desc} />
                       </View>
                       <TitleComponent text={tasks[0].title} />
-                      <TextComponent text={tasks[0].description} />
-                      <View style={{marginVertical: 20}}>
+                      <TextComponent line={3} text={tasks[0].description} />
+                      <View style={{marginVertical: 18}}>
                         <AvatarGroupComponent uids={tasks[0].uids} />
                       </View>
-                      {tasks[0].progress && (
+                      {tasks[0].progress &&
+                      (tasks[0].progress as number) >= 0 ? (
                         <ProgressBarComponent
                           percent={`${Math.floor(tasks[0].progress * 100)}%`}
                           color="#0AACFF"
                           size="large"
                         />
-                      )}
+                      ) : null}
                       {tasks[0].dueDate && (
                         <TextComponent
                           text={`Due ${HandleDateTime.DateString(
@@ -176,19 +200,20 @@ const HomeScreen = ({navigation}: any) => {
                         <Edit2 size={24} color={colors.desc} />
                       </View>
                       <TitleComponent text={tasks[1].title} />
-                      <View style={{marginVertical: 20}}>
+                      <View style={{marginVertical: 18}}>
                         {tasks[1].uids && (
                           <AvatarGroupComponent uids={tasks[1].uids} />
                         )}
                       </View>
 
-                      {tasks[1].progress && (
+                      {tasks[1].progress &&
+                      (tasks[1].progress as number) >= 0 ? (
                         <ProgressBarComponent
                           percent={`${Math.floor(tasks[1].progress * 100)}%`}
                           color="#A2F068"
                           size="large"
                         />
-                      )}
+                      ) : null}
                       {tasks[1].dueDate && (
                         <TextComponent
                           text={`Due ${HandleDateTime.DateString(
@@ -214,7 +239,7 @@ const HomeScreen = ({navigation}: any) => {
                         <Edit2 size={24} color={colors.desc} />
                       </View>
                       <TitleComponent text={tasks[2].title} />
-                      <TextComponent text={tasks[2].description} />
+                      <TextComponent line={3} text={tasks[2].description} />
 
                       {tasks[2].dueDate && (
                         <TextComponent
@@ -237,19 +262,27 @@ const HomeScreen = ({navigation}: any) => {
                 size={21}
                 text="Urgents tasks"
               />
-              <CardComponent>
-                <RowComponent>
-                  <CicularComponent value={40} radius={36} />
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      paddingLeft: 12,
-                    }}>
-                    <TextComponent text="Title of task" />
-                  </View>
-                </RowComponent>
-              </CardComponent>
+              {urgentTasks.length > 0 &&
+                urgentTasks.map((item, index) => (
+                  <>
+                    <CardComponent styles={{marginVertical: 12}} key={index}>
+                      <RowComponent>
+                        <CicularComponent
+                          value={
+                            item.progress ? Math.floor(item.progress * 100) : 0
+                          }
+                        />
+                        <SpaceComponent width={42} />
+                        <TextComponent
+                          size={24}
+                          text={item.title}
+                          font={fontFamilies.bold}
+                        />
+                      </RowComponent>
+                    </CardComponent>
+                  </>
+                ))}
+
               <SpaceComponent height={46} />
             </SectionComponent>
           </>

@@ -18,7 +18,7 @@ export interface TaskModel {
 
 export interface Attachment {
   name: string;
-  url: string;
+  fileUrl: string;
   size: number;
   type?: string;
 }

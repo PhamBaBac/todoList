@@ -5,7 +5,6 @@ import {fontFamilies} from '../constants/fontFamilies';
 import RowComponent from './RowComponent';
 import TextComponent from './TextComponent';
 import firestore from '@react-native-firebase/firestore';
-import {globalStyles} from '../styles/globalStyles';
 import AvatarComponent from '../components/AvatarComponent';
 
 interface Props {
@@ -14,7 +13,6 @@ interface Props {
 
 const AvatarGroupComponent = (props: Props) => {
   const {uids} = props;
-
   const [usersName, setUsersName] = useState<
     {
       name: string;
