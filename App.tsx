@@ -1,24 +1,18 @@
-import React from 'react'
-import { SafeAreaView, StatusBar } from 'react-native'
-import { colors } from './src/constants/colors';
-import { NavigationContainer } from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
+import React from 'react';
+import {StatusBar} from 'react-native';
+import {colors} from './src/constants/colors';
 import Router from './src/routers/Router';
 
 const App = () => {
   return (
     <>
-      <SafeAreaView style={{flex: 1, backgroundColor: colors.bgColor}}>
-        <StatusBar
-          translucent
-          barStyle={'light-content'}
-          backgroundColor="transparent"
-        />
-        <NavigationContainer>
-          <Router/>
-        </NavigationContainer>
-      </SafeAreaView>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bgColor} />
+      <NavigationContainer>
+        <Router />
+      </NavigationContainer>
     </>
   );
-}
+};
 
-export default App
+export default App;

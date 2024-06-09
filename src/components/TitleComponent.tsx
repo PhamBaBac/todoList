@@ -10,13 +10,15 @@ interface Props {
   color?: string;
   flex?: number;
   styles?: StyleProp<TextStyle>;
+  line?: number;
 }
 
 const TitleComponent = (props: Props) => {
-  const {text, font, size, color, flex,styles} = props;
+  const {text, font, size, color, flex,styles, line} = props;
 
   return (
     <TextComponent
+    line={line ?? 1}
       size={size ?? 20}
       font={font ?? fontFamilies.semiBold}
       color={color}

@@ -32,6 +32,7 @@ const HomeScreen = ({navigation}: any) => {
   const user = auth().currentUser;
   const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskModel[]>([]);
+  console.log('tasks', tasks);
 
   useEffect(() => {
     getTasks();
@@ -39,10 +40,11 @@ const HomeScreen = ({navigation}: any) => {
 
   const getTasks = () => {
     setIsLoading(true);
-    const unsubscribe = firestore()
+
+    firestore()
       .collection('tasks')
-      .orderBy('dueDate', 'desc')
-      .limit(3)
+      .orderBy('dueDate')
+      .limitToLast(3)
       .onSnapshot(snap => {
         if (snap.empty) {
           console.log(`tasks not found!`);
@@ -54,12 +56,10 @@ const HomeScreen = ({navigation}: any) => {
               ...item.data(),
             });
           });
-
           setTasks(items);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       });
-    return unsubscribe;
   };
 
   const handleSingout = async () => {
@@ -127,7 +127,13 @@ const HomeScreen = ({navigation}: any) => {
                 styles={{alignItems: 'flex-start', borderRadius: 100}}>
                 <View style={{flex: 1}}>
                   {tasks[0] && (
-                    <CardImageComponent>
+                    <CardImageComponent
+                      onPress={() =>
+                        navigation.navigate('TaskDetail', {
+                          id: tasks[0].id,
+                          color: 'rgba(113,77,217,0.9)',
+                        })
+                      }>
                       <View style={[globalStyles.iconContainer]}>
                         <Edit2 size={24} color={colors.desc} />
                       </View>
@@ -138,7 +144,7 @@ const HomeScreen = ({navigation}: any) => {
                       </View>
                       {tasks[0].progress && (
                         <ProgressBarComponent
-                          percent="70%"
+                          percent={`${Math.floor(tasks[0].progress * 100)}%`}
                           color="#0AACFF"
                           size="large"
                         />
@@ -158,7 +164,14 @@ const HomeScreen = ({navigation}: any) => {
                 <SpaceComponent width={16} />
                 <View style={{flex: 1}}>
                   {tasks[1] && (
-                    <CardImageComponent color="rgba(33, 150, 243, 0.9)">
+                    <CardImageComponent
+                      color="rgba(33, 150, 243, 0.9)"
+                      onPress={() =>
+                        navigation.navigate('TaskDetail', {
+                          id: tasks[1].id,
+                          color: 'rgba(33, 150, 243, 0.9)',
+                        })
+                      }>
                       <View style={[globalStyles.iconContainer]}>
                         <Edit2 size={24} color={colors.desc} />
                       </View>
@@ -171,7 +184,7 @@ const HomeScreen = ({navigation}: any) => {
 
                       {tasks[1].progress && (
                         <ProgressBarComponent
-                          percent="40%"
+                          percent={`${Math.floor(tasks[1].progress * 100)}%`}
                           color="#A2F068"
                           size="large"
                         />
@@ -189,19 +202,20 @@ const HomeScreen = ({navigation}: any) => {
                   )}
                   <SpaceComponent height={16} />
                   {tasks[2] && (
-                    <CardImageComponent color="rgba(18, 118, 22, 0.9)">
+                    <CardImageComponent
+                      color="rgba(18, 118, 22, 0.9)"
+                      onPress={() =>
+                        navigation.navigate('TaskDetail', {
+                          id: tasks[2].id,
+                          color: 'rgba(18, 118, 22, 0.9)',
+                        })
+                      }>
                       <View style={[globalStyles.iconContainer]}>
                         <Edit2 size={24} color={colors.desc} />
                       </View>
                       <TitleComponent text={tasks[2].title} />
                       <TextComponent text={tasks[2].description} />
-                      {tasks[2].progress && (
-                        <ProgressBarComponent
-                          percent="40%"
-                          color="#A2F068"
-                          size="large"
-                        />
-                      )}
+
                       {tasks[2].dueDate && (
                         <TextComponent
                           text={`Due ${HandleDateTime.DateString(
@@ -240,14 +254,7 @@ const HomeScreen = ({navigation}: any) => {
             </SectionComponent>
           </>
         ) : (
-          <View
-            style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-            <TextComponent
-              styles={{textTransform: 'uppercase'}}
-              text="No tasks found"
-              size={28}
-            />
-          </View>
+          <></>
         )}
       </Container>
       <View

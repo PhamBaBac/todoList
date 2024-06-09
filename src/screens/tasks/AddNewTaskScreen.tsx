@@ -33,6 +33,7 @@ const initValue: TaskModel = {
   createdAt: Date.now(),
   updatedAt: Date.now(),
   isUrgent: false,
+  attachments: [],
 };
 
 const AddNewTask = ({navigation}: any) => {
@@ -40,7 +41,6 @@ const AddNewTask = ({navigation}: any) => {
   const [usersSelect, setUsersSelect] = useState<SelectModel[]>([]);
   const [attachments, setAttachments] = useState<DocumentPickerResponse[]>([]);
   const [attachmentsUrl, setAttachmentsUrl] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     handleGetAllUsers();
@@ -73,44 +73,42 @@ const AddNewTask = ({navigation}: any) => {
 
   const handleChangeValue = (id: string, value: string | string[] | Date) => {
     const item: any = {...taskDetail};
-
     item[`${id}`] = value;
-
     setTaskDetail(item);
   };
 
   useEffect(() => {
-    if(Platform.OS === 'android') {
+    if (Platform.OS === 'android') {
       PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         // PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-
       ]);
     }
   }, []);
 
-  const getFilePath = async (file: DocumentPickerResponse ) => {
-    if(Platform.OS === 'ios') {
+  const getFilePath = async (file: DocumentPickerResponse) => {
+    if (Platform.OS === 'ios') {
       return file.uri;
     }
     return (await RNFecthBlob.fs.stat(file.uri)).path;
-  }
+  };
 
   const handleAddNewTask = async () => {
     const data = {
       ...taskDetail,
+
       fileUrls: attachmentsUrl,
     };
 
-    await firestore()
-      .collection('tasks')
-      .add(data)
-      .then(() => {
-        console.log('New task added!!');
-        navigation.goBack();
-      })
-      .catch(error => console.log(error));
+    const docRef = await firestore().collection('tasks').add(data);
+
+    await firestore().collection('tasks').doc(docRef.id).update({
+      id: docRef.id,
+    });
+
+    console.log('New task added with ID: ', docRef.id);
+    navigation.goBack();
   };
 
   const handlePickerDocument = () => {
@@ -129,10 +127,9 @@ const AddNewTask = ({navigation}: any) => {
     const filename = item.name ?? `file${Date.now()}`;
     const path = `documents/${filename}`;
     const items = [...attachmentsUrl];
-    
+
     const uri = await getFilePath(item);
-    console.log("uri", uri);
-    
+    console.log('uri', uri);
 
     await storage().ref(path).putFile(uri);
 
