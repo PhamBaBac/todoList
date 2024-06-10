@@ -44,12 +44,11 @@ const HomeScreen = ({navigation}: any) => {
 
     firestore()
       .collection('tasks')
-      .orderBy('dueDate')
-      .limitToLast(3)
+      .where('uids', 'array-contains', user?.uid)
+      .orderBy('createdAt', 'desc')
+      .limit(3)
       .onSnapshot(snap => {
-        if (snap.empty) {
-          console.log(`tasks not found!`);
-        } else {
+        if (snap && !snap.empty) {
           const items: TaskModel[] = [];
           snap.forEach((item: any) => {
             items.push({
@@ -58,32 +57,32 @@ const HomeScreen = ({navigation}: any) => {
             });
           });
           setTasks(items);
-          setIsLoading(false);
         }
+        setIsLoading(false);
       });
   };
 
- const getUrgetTasks = () => {
-   const fillter = firestore()
-     .collection('tasks')
-     .where('isUrgent', '==', true)
-     .orderBy('createdAt', 'desc') 
-     .limit(3);
-   fillter.onSnapshot(snap => {
-     if (snap && !snap.empty) {
-       const items: TaskModel[] = [];
-       snap.forEach((item: any) => {
-         items.push({
-           id: item.id,
-           ...item.data(),
-         });
-       });
-       setUrgentTasks(items);
-     } else {
-       console.log('No urgent tasks found');
-     }
-   });
- };
+  const getUrgetTasks = () => {
+    const fillter = firestore()
+      .collection('tasks')
+      .where('isUrgent', '==', true)
+      .orderBy('createdAt', 'desc')
+      .limit(3);
+    fillter.onSnapshot(snap => {
+      if (snap && !snap.empty) {
+        const items: TaskModel[] = [];
+        snap.forEach((item: any) => {
+          items.push({
+            id: item.id,
+            ...item.data(),
+          });
+        });
+        setUrgentTasks(items);
+      } else {
+        console.log('No urgent tasks found');
+      }
+    });
+  };
 
   const handleSingout = async () => {
     await auth().signOut();
@@ -265,7 +264,9 @@ const HomeScreen = ({navigation}: any) => {
               {urgentTasks.length > 0 &&
                 urgentTasks.map((item, index) => (
                   <>
-                    <CardComponent styles={{marginVertical: 12}} key={index}>
+                    <CardComponent
+                      styles={{marginVertical: 10}}
+                      key={`urgentr${index}`}>
                       <RowComponent>
                         <CicularComponent
                           value={
@@ -302,7 +303,12 @@ const HomeScreen = ({navigation}: any) => {
         }}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => navigation.navigate('AddNewTaskScreen')}
+          onPress={() =>
+            navigation.navigate('AddNewTaskScreen', {
+              editable: false,
+              tasks: undefined,
+            })
+          }
           style={[
             globalStyles.row,
             {

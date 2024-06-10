@@ -15,6 +15,9 @@ import TitleComponent from '../../components/TitleComponent';
 import TextComponent from '../../components/TextComponent';
 import UploadFileComponent from '../../components/UploadFileComponent';
 import { calcFileSize } from '../../utils/calcFileSize';
+import auth from '@react-native-firebase/auth';
+import { create } from 'react-test-renderer';
+
 
 const initValue: TaskModel = {
   id: '',
@@ -30,7 +33,10 @@ const initValue: TaskModel = {
   attachments: [],
 };
 
-const AddNewTask = ({navigation}: any) => {
+const AddNewTask = ({navigation,  route}: any) => {
+  const user = auth().currentUser;
+   const {editable, task}: {editable: boolean; task?: TaskModel} = route.params;
+
   const [taskDetail, setTaskDetail] = useState<TaskModel>(initValue);
   const [usersSelect, setUsersSelect] = useState<SelectModel[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -38,6 +44,20 @@ const AddNewTask = ({navigation}: any) => {
   useEffect(() => {
     handleGetAllUsers();
   }, []);
+
+  useEffect(() => {
+    user && setTaskDetail({...taskDetail, uids: [user.uid]});
+  }, [user]);
+
+  useEffect(() => {
+    task &&
+      setTaskDetail({
+        ...taskDetail,
+        title: task.title,
+        description: task.description,
+        uids: task.uids,
+      });
+  }, [task]);
 
   const handleGetAllUsers = async () => {
     await firestore()
@@ -81,20 +101,23 @@ const AddNewTask = ({navigation}: any) => {
   }, []);
 
   const handleAddNewTask = async () => {
-    const data = {
-      ...taskDetail,
-      attachments: attachments
-      
-    };
+    if(user){
+      const data = {
+        ...taskDetail,
+        attachments: attachments,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      console.log(data);
 
-    const docRef = await firestore().collection('tasks').add(data);
+      const docRef = await firestore().collection('tasks').add(data);
 
-    await firestore().collection('tasks').doc(docRef.id).update({
-      id: docRef.id,
-    });
-
-    console.log('New task added with ID: ', docRef.id);
-    navigation.goBack();
+      await firestore().collection('tasks').doc(docRef.id).update({
+        id: docRef.id,
+      });
+      navigation.goBack();
+    }
+    
   };
 
   

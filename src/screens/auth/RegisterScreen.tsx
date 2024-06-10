@@ -1,118 +1,105 @@
-import React, {useEffect, useState} from 'react';
-
 import {Lock, Sms} from 'iconsax-react-native';
+import React, {useEffect, useState} from 'react';
 import {Text, View} from 'react-native';
-
-import auth from '@react-native-firebase/auth';
-import Container from '../../components/Container';
-import SectionComponent from '../../components/SectionComponent';
-import RowComponent from '../../components/RowComponent';
-import TitleComponent from '../../components/TitleComponent';
-import InputComponent from '../../components/InputComponent';
-import { colors } from '../../constants/colors';
 import ButtonComponent from '../../components/ButtonComponent';
-import { globalStyles } from '../../styles/globalStyles';
-import TextComponent from '../../components/TextComponent';
+import Container from '../../components/Container';
+import InputComponent from '../../components/InputComponent';
+import SectionComponent from '../../components/SectionComponent';
+import TitleComponent from '../../components/TitleComponent';
+import {colors} from '../../constants/colors';
+import {fontFamilies} from '../../constants/fontFamilies';
 import SpaceComponent from '../../components/SpaceComponent';
+import {globalStyles} from '../../styles/globalStyles';
+import auth from '@react-native-firebase/auth';
+import TextComponent from '../../components/TextComponent';
+import {HandleUser} from '../../utils/handleUser';
 
-const RegisterScreen = ({navigation}: any) => {
+const SigninScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorText, setErrorText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorText, setErrorText] = useState('');
 
   useEffect(() => {
-    if (email) {
+    if (email || password) {
       setErrorText('');
     }
-  }, [email]);
+  }, [email, password]);
 
-  const handleCreateAccount = async () => {
-    if (!email) {
-      setErrorText('Please enter your email!!!');
-    } else if (!password || !confirmPassword) {
-      setErrorText('Please enter your password!!!');
-    } else if (password !== confirmPassword) {
-      setErrorText('Password is not match!!!');
-    } else if (password.length < 6) {
-      setErrorText('Password must be to 6 characters');
+  const handleSigninWithEmail = async () => {
+    if (!email || !password) {
+      setErrorText('Please enter your email and password!!!');
     } else {
+      setErrorText('');
       setIsLoading(true);
       await auth()
         .createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
           const user = userCredential.user;
-
-          if (user) {
-            console.log(user);
-            setIsLoading(false);
-          }
+          HandleUser.SaveToDatabase(user);
+          setIsLoading(false);
         })
-        .catch(error => {
+        .catch((error: any) => {
           setIsLoading(false);
           setErrorText(error.message);
         });
     }
   };
+
   return (
     <Container>
       <SectionComponent
         styles={{
-          flex: 1,
           justifyContent: 'center',
+          flex: 1,
         }}>
-        <RowComponent styles={{marginBottom: 16}}>
-          <TitleComponent text="SIGN IN" size={32} flex={0} />
-        </RowComponent>
-        <InputComponent
-          title="Email"
-          value={email}
-          onChange={val => setEmail(val)}
-          placeholder="Email"
-          prefix={<Sms size={22} color={colors.gray2} />}
-          allowClear
-          type="email-address"
-        />
-        <InputComponent
-          title="Password"
-          isPassword
-          value={password}
-          onChange={val => setPassword(val)}
-          placeholder="Password"
-          prefix={<Lock size={22} color={colors.gray2} />}
-        />
-        <InputComponent
-          title="Comfirm password"
-          isPassword
-          value={confirmPassword}
-          onChange={val => setConfirmPassword(val)}
-          placeholder="Comfirm password"
-          prefix={<Lock size={22} color={colors.gray2} />}
+        <TitleComponent
+          text="Sign In"
+          size={32}
+          font={fontFamilies.bold}
+          styles={{textTransform: 'uppercase', flex: 0, textAlign: 'center'}}
         />
 
-        {errorText && <TextComponent text={errorText} color="coral" flex={0} />}
-        <SpaceComponent height={20} />
+        <View style={{marginVertical: 20}}>
+          <InputComponent
+            value={email}
+            onChange={val => setEmail(val)}
+            prefix={<Sms size={20} color={colors.desc} />}
+            placeholder="Email"
+            title="Email"
+            allowClear
+          />
+          <InputComponent
+            value={password}
+            onChange={val => setPassword(val)}
+            prefix={<Lock size={20} color={colors.desc} />}
+            placeholder="Password"
+            title="Password"
+            isPassword
+          />
+          {errorText && (
+            <TextComponent text={errorText} color="coral" flex={0} />
+          )}
+        </View>
 
         <ButtonComponent
           isLoading={isLoading}
-          text="Register"
-          onPress={handleCreateAccount}
+          text="Sign in"
+          onPress={handleSigninWithEmail}
         />
 
-        <RowComponent styles={{marginTop: 20}}>
-          <Text style={[globalStyles.text]}>
-            You have an account?{' '}
-            <Text
-              style={{color: 'coral'}}
-              onPress={() => navigation.navigate('LoginScreen')}>
-              Login
-            </Text>
+        <SpaceComponent height={20} />
+        <Text style={[globalStyles.text, {textAlign: 'center'}]}>
+          You have an already account?{' '}
+          <Text
+            style={{color: 'coral'}}
+            onPress={() => navigation.navigate('LoginScreen')}>
+            Login
           </Text>
-        </RowComponent>
+        </Text>
       </SectionComponent>
     </Container>
   );
 };
 
-export default RegisterScreen;
+export default SigninScreen;
