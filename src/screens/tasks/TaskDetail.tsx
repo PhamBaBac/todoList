@@ -35,6 +35,7 @@ import ModalAddSubTask from '../../modals/ModalAddSubTask';
 
 const TaskDetail = ({navigation, route}: any) => {
   const {id, color}: {id: string; color: string} = route.params;
+  console.log(id);
 
   const [taskDetail, setTaskDetail] = useState<TaskModel>();
   const [isUrgent, setIsUrgent] = useState(false);
@@ -151,6 +152,7 @@ const TaskDetail = ({navigation, route}: any) => {
       <ScrollView style={{flex: 1, backgroundColor: colors.bgColor}}>
         <StatusBar hidden />
         <SectionComponent
+          color={color ?? 'rgba(113, 77, 217, 0.9)'}
           styles={{
             backgroundColor: color,
             paddingTop: 60,
@@ -216,7 +218,7 @@ const TaskDetail = ({navigation, route}: any) => {
                   flex: 1,
                   alignItems: 'flex-end',
                 }}>
-                <AvatarGroupComponent  uids={taskDetail.uids} />
+                <AvatarGroupComponent uids={taskDetail.uids} />
               </View>
             </RowComponent>
           </View>

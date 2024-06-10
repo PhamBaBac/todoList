@@ -14,10 +14,9 @@ import ButtonComponent from '../../components/ButtonComponent';
 import TitleComponent from '../../components/TitleComponent';
 import TextComponent from '../../components/TextComponent';
 import UploadFileComponent from '../../components/UploadFileComponent';
-import { calcFileSize } from '../../utils/calcFileSize';
+import {calcFileSize} from '../../utils/calcFileSize';
 import auth from '@react-native-firebase/auth';
-import { create } from 'react-test-renderer';
-
+import {create} from 'react-test-renderer';
 
 const initValue: TaskModel = {
   id: '',
@@ -33,9 +32,9 @@ const initValue: TaskModel = {
   attachments: [],
 };
 
-const AddNewTask = ({navigation,  route}: any) => {
+const AddNewTask = ({navigation, route}: any) => {
   const user = auth().currentUser;
-   const {editable, task}: {editable: boolean; task?: TaskModel} = route.params;
+  const {editable, task}: {editable: boolean; task?: TaskModel} = route.params;
 
   const [taskDetail, setTaskDetail] = useState<TaskModel>(initValue);
   const [usersSelect, setUsersSelect] = useState<SelectModel[]>([]);
@@ -58,6 +57,7 @@ const AddNewTask = ({navigation,  route}: any) => {
         uids: task.uids,
       });
   }, [task]);
+
 
   const handleGetAllUsers = async () => {
     await firestore()
@@ -101,28 +101,36 @@ const AddNewTask = ({navigation,  route}: any) => {
   }, []);
 
   const handleAddNewTask = async () => {
-    if(user){
+    if (user) {
       const data = {
         ...taskDetail,
-        attachments: attachments,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        id: task ? task.id : taskDetail.id,
+        attachments: task ? task.attachments : attachments,
+        dueDate: task ? task.dueDate : taskDetail.dueDate,
+        start: task ? task.start : taskDetail.start,
+        end: task ? task.end : taskDetail.end,
+        createdAt: task ? task.createdAt : Date.now(),
+        updatedAt: Date.now()
       };
-      console.log(data);
-
-      const docRef = await firestore().collection('tasks').add(data);
-
-      await firestore().collection('tasks').doc(docRef.id).update({
-        id: docRef.id,
-      });
-      navigation.goBack();
+       
+      if (task) {
+        await firestore()
+          .doc(`tasks/${task.id}`)
+          .update(data)
+          .then(() => {
+            console.log('Update task success');
+            navigation.goBack();
+          });
+      } else {
+        const docRef = await firestore().collection('tasks').add(data);
+        await firestore().collection('tasks').doc(docRef.id).update({
+          id: docRef.id,
+        });
+        navigation.goBack();
+      }
     }
-    
   };
 
-  
-
-  
   return (
     <Container back title="Add new task" isScroll>
       <SectionComponent>
@@ -206,7 +214,10 @@ const AddNewTask = ({navigation,  route}: any) => {
         </View>
       </SectionComponent>
       <SectionComponent>
-        <ButtonComponent text="Save" onPress={handleAddNewTask} />
+        <ButtonComponent
+          text={task ? 'Update' : 'Save'}
+          onPress={handleAddNewTask}
+        />
       </SectionComponent>
     </Container>
   );

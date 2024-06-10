@@ -45,8 +45,7 @@ const HomeScreen = ({navigation}: any) => {
     firestore()
       .collection('tasks')
       .where('uids', 'array-contains', user?.uid)
-      .orderBy('createdAt', 'desc')
-      .limit(3)
+      
       .onSnapshot(snap => {
         if (snap && !snap.empty) {
           const items: TaskModel[] = [];
@@ -66,8 +65,6 @@ const HomeScreen = ({navigation}: any) => {
     const fillter = firestore()
       .collection('tasks')
       .where('isUrgent', '==', true)
-      .orderBy('createdAt', 'desc')
-      .limit(3);
     fillter.onSnapshot(snap => {
       if (snap && !snap.empty) {
         const items: TaskModel[] = [];
@@ -83,6 +80,12 @@ const HomeScreen = ({navigation}: any) => {
       }
     });
   };
+
+  const handleMoveToTaskDetail = (id?: string, color?: string) =>
+    navigation.navigate('TaskDetail', {
+      id,
+      color,
+    });
 
   const handleSingout = async () => {
     await auth().signOut();
@@ -151,14 +154,21 @@ const HomeScreen = ({navigation}: any) => {
                   {tasks[0] && (
                     <CardImageComponent
                       onPress={() =>
-                        navigation.navigate('TaskDetail', {
-                          id: tasks[0].id,
-                          color: 'rgba(113,77,217,0.9)',
-                        })
+                        handleMoveToTaskDetail(
+                          tasks[0].id as string,
+                          'rgba(113,77,217,0.9)',
+                        )
                       }>
-                      <View style={[globalStyles.iconContainer]}>
-                        <Edit2 size={24} color={colors.desc} />
-                      </View>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('AddNewTaskScreen', {
+                            editable: true,
+                            task: tasks[0],
+                          })
+                        }
+                        style={globalStyles.iconContainer}>
+                        <Edit2 size={20} color={colors.white} />
+                      </TouchableOpacity>
                       <TitleComponent text={tasks[0].title} />
                       <TextComponent line={3} text={tasks[0].description} />
                       <View style={{marginVertical: 18}}>
@@ -190,14 +200,21 @@ const HomeScreen = ({navigation}: any) => {
                     <CardImageComponent
                       color="rgba(33, 150, 243, 0.9)"
                       onPress={() =>
-                        navigation.navigate('TaskDetail', {
-                          id: tasks[1].id,
-                          color: 'rgba(33, 150, 243, 0.9)',
-                        })
+                        handleMoveToTaskDetail(
+                          tasks[1].id as string,
+                          'rgba(33, 150, 243, 0.9)',
+                        )
                       }>
-                      <View style={[globalStyles.iconContainer]}>
-                        <Edit2 size={24} color={colors.desc} />
-                      </View>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('AddNewTaskScreen', {
+                            editable: true,
+                            task: tasks[1],
+                          })
+                        }
+                        style={globalStyles.iconContainer}>
+                        <Edit2 size={20} color={colors.white} />
+                      </TouchableOpacity>
                       <TitleComponent text={tasks[1].title} />
                       <View style={{marginVertical: 18}}>
                         {tasks[1].uids && (
@@ -229,14 +246,21 @@ const HomeScreen = ({navigation}: any) => {
                     <CardImageComponent
                       color="rgba(18, 118, 22, 0.9)"
                       onPress={() =>
-                        navigation.navigate('TaskDetail', {
-                          id: tasks[2].id,
-                          color: 'rgba(18, 118, 22, 0.9)',
-                        })
+                        handleMoveToTaskDetail(
+                          tasks[2].id as string,
+                          'rgba(18, 118, 22, 0.9)',
+                        )
                       }>
-                      <View style={[globalStyles.iconContainer]}>
-                        <Edit2 size={24} color={colors.desc} />
-                      </View>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('AddNewTaskScreen', {
+                            editable: true,
+                            task: tasks[2],
+                          })
+                        }
+                        style={globalStyles.iconContainer}>
+                        <Edit2 size={20} color={colors.white} />
+                      </TouchableOpacity>
                       <TitleComponent text={tasks[2].title} />
                       <TextComponent line={3} text={tasks[2].description} />
 
@@ -263,25 +287,30 @@ const HomeScreen = ({navigation}: any) => {
               />
               {urgentTasks.length > 0 &&
                 urgentTasks.map((item, index) => (
-                  <>
-                    <CardComponent
-                      styles={{marginVertical: 10}}
-                      key={`urgentr${index}`}>
-                      <RowComponent>
-                        <CicularComponent
-                          value={
-                            item.progress ? Math.floor(item.progress * 100) : 0
-                          }
-                        />
-                        <SpaceComponent width={42} />
-                        <TextComponent
-                          size={24}
-                          text={item.title}
-                          font={fontFamilies.bold}
-                        />
-                      </RowComponent>
-                    </CardComponent>
-                  </>
+                  <CardComponent
+                    styles={{marginVertical: 10}}
+                    onPress={() => handleMoveToTaskDetail(item.id,
+                      index === 0
+                        ? 'rgba(113,77,217,0.9)'
+                        : index === 1
+                        ? 'rgba(33, 150, 243, 0.9)'
+                        : 'rgba(18, 118, 22, 0.9)'
+                    )}
+                    key={`urgentTask${item.id}`}>
+                    <RowComponent>
+                      <CicularComponent
+                        value={
+                          item.progress ? Math.floor(item.progress * 100) : 0
+                        }
+                      />
+                      <SpaceComponent width={42} />
+                      <TextComponent
+                        size={24}
+                        text={item.title}
+                        font={fontFamilies.bold}
+                      />
+                    </RowComponent>
+                  </CardComponent>
                 ))}
 
               <SpaceComponent height={46} />
