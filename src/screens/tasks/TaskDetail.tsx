@@ -145,7 +145,31 @@ const TaskDetail = ({navigation, route}: any) => {
       console.log(error);
     }
   };
-  
+
+  const handleRemoveTask = () => {
+    Alert.alert('Confirm', 'Are you sure, you want delete task?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+        onPress: () => console.log('Cancel'),
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await firestore()
+            .doc(`tasks/${id}`)
+            .delete()
+            .then(() => {
+              navigation.goBack();
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        },
+      },
+    ]);
+  };
 
   return taskDetail ? (
     <>
@@ -154,7 +178,6 @@ const TaskDetail = ({navigation, route}: any) => {
         <SectionComponent
           color={color ?? 'rgba(113, 77, 217, 0.9)'}
           styles={{
-            backgroundColor: color,
             paddingTop: 60,
             paddingBottom: 18,
             borderBottomLeftRadius: 20,
@@ -374,9 +397,7 @@ const TaskDetail = ({navigation, route}: any) => {
             ))}
         </SectionComponent>
         <SectionComponent>
-          <RowComponent
-          //  onPress={handleRemoveTask}
-          >
+          <RowComponent onPress={handleRemoveTask}>
             <TextComponent text="Delete task" color="red" flex={0} />
           </RowComponent>
         </SectionComponent>

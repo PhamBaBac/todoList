@@ -6,6 +6,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import auth from '@react-native-firebase/auth'
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import TaskDetail from '../screens/tasks/TaskDetail';
+import ListTasks from '../screens/tasks/ListTasks';
 const Router = () => {
   const Stack = createNativeStackNavigator();
   
@@ -25,6 +26,7 @@ const Router = () => {
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="AddNewTaskScreen" component={AddNewTaskScreen} />
       <Stack.Screen name= "TaskDetail" component={TaskDetail} />
+      <Stack.Screen name="ListTasks" component={ListTasks} />
     </Stack.Navigator>
   );
 

@@ -14,6 +14,7 @@ import {
   Logout,
   Notification,
   SearchNormal,
+  SearchNormal1,
 } from 'iconsax-react-native';
 import {colors} from '../../constants/colors';
 import SpaceComponent from '../../components/SpaceComponent';
@@ -27,6 +28,9 @@ import auth from '@react-native-firebase/auth';
 import {TaskModel} from '../../models/TaskModel';
 import firestore from '@react-native-firebase/firestore';
 import {HandleDateTime} from '../../utils/handeDateTime';
+import {monthNames} from '../../constants/appInfos';
+import {add0ToNumber} from '../../utils/add0ToNumber';
+const date = new Date();
 
 const HomeScreen = ({navigation}: any) => {
   const user = auth().currentUser;
@@ -36,16 +40,20 @@ const HomeScreen = ({navigation}: any) => {
 
   useEffect(() => {
     getTasks();
-    getUrgetTasks();
   }, []);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const urgent = tasks.filter(task => task.isUrgent);
+      setUrgentTasks(urgent);
+    }
+  }, [tasks]);
 
   const getTasks = () => {
     setIsLoading(true);
-
     firestore()
       .collection('tasks')
       .where('uids', 'array-contains', user?.uid)
-      
       .onSnapshot(snap => {
         if (snap && !snap.empty) {
           const items: TaskModel[] = [];
@@ -55,30 +63,10 @@ const HomeScreen = ({navigation}: any) => {
               ...item.data(),
             });
           });
-          setTasks(items);
+          setTasks(items.sort((a, b) => b.createdAt - a.createdAt));
         }
         setIsLoading(false);
       });
-  };
-
-  const getUrgetTasks = () => {
-    const fillter = firestore()
-      .collection('tasks')
-      .where('isUrgent', '==', true)
-    fillter.onSnapshot(snap => {
-      if (snap && !snap.empty) {
-        const items: TaskModel[] = [];
-        snap.forEach((item: any) => {
-          items.push({
-            id: item.id,
-            ...item.data(),
-          });
-        });
-        setUrgentTasks(items);
-      } else {
-        console.log('No urgent tasks found');
-      }
-    });
   };
 
   const handleMoveToTaskDetail = (id?: string, color?: string) =>
@@ -117,9 +105,13 @@ const HomeScreen = ({navigation}: any) => {
         <SectionComponent>
           <RowComponent
             styles={[globalStyles.inputContainer]}
-            onPress={() => console.log('Say hi')}>
-            <TextComponent color="#69686F" text="Search task" />
-            <SearchNormal size={24} color={colors.desc} />
+            onPress={() =>
+              navigation.navigate('ListTasks', {
+                tasks,
+              })
+            }>
+            <TextComponent color="#696B6F" text="Search task" />
+            <SearchNormal1 size={20} color={colors.desc} />
           </RowComponent>
         </SectionComponent>
         <SectionComponent>
@@ -127,18 +119,35 @@ const HomeScreen = ({navigation}: any) => {
             <RowComponent>
               <View style={{flex: 1}}>
                 <TitleComponent text="Task progress" />
-                <TextComponent text="30/40 tasks done" />
+                <TextComponent
+                  text={`${
+                    tasks.filter(
+                      element => element.progress && element.progress === 1,
+                    ).length
+                  } /${tasks.length}`}
+                />
                 <SpaceComponent height={12} />
                 <RowComponent justify="flex-start">
                   <TagComponent
-                    text="Match 22"
-                    onPress={() => console.log('Say Hi!!!')}
+                    text={`${monthNames[date.getMonth()]} ${add0ToNumber(
+                      date.getDate(),
+                    )}`}
                   />
                 </RowComponent>
               </View>
               <View>
                 <TextComponent text="CircleChar" />
-                <CicularComponent value={80} />
+                {tasks.length > 0 && (
+                  <CicularComponent
+                    value={Math.floor(
+                      (tasks.filter(
+                        element => element.progress && element.progress === 1,
+                      ).length /
+                        tasks.length) *
+                        100,
+                    )}
+                  />
+                )}
               </View>
             </RowComponent>
           </CardComponent>
@@ -148,6 +157,19 @@ const HomeScreen = ({navigation}: any) => {
         ) : tasks.length > 0 ? (
           <>
             <SectionComponent>
+              <RowComponent
+                onPress={() =>
+                  navigation.navigate('ListTasks', {
+                    tasks,
+                    colors,
+                  })
+                }
+                justify="flex-end"
+                styles={{
+                  marginBottom: 16,
+                }}>
+                <TextComponent size={16} text="See all" flex={0} />
+              </RowComponent>
               <RowComponent
                 styles={{alignItems: 'flex-start', borderRadius: 100}}>
                 <View style={{flex: 1}}>
@@ -171,7 +193,7 @@ const HomeScreen = ({navigation}: any) => {
                       </TouchableOpacity>
                       <TitleComponent text={tasks[0].title} />
                       <TextComponent line={3} text={tasks[0].description} />
-                      <View style={{marginVertical: 18}}>
+                      <View style={{paddingTop: 26}}>
                         <AvatarGroupComponent uids={tasks[0].uids} />
                       </View>
                       {tasks[0].progress &&
@@ -182,6 +204,7 @@ const HomeScreen = ({navigation}: any) => {
                           size="large"
                         />
                       ) : null}
+                      <SpaceComponent height={24} />
                       {tasks[0].dueDate && (
                         <TextComponent
                           text={`Due ${HandleDateTime.DateString(
@@ -215,8 +238,8 @@ const HomeScreen = ({navigation}: any) => {
                         style={globalStyles.iconContainer}>
                         <Edit2 size={20} color={colors.white} />
                       </TouchableOpacity>
-                      <TitleComponent text={tasks[1].title} />
-                      <View style={{marginVertical: 18}}>
+                      <TextComponent line={3} text={tasks[1].description} />
+                      <View style={{paddingTop: 18}}>
                         {tasks[1].uids && (
                           <AvatarGroupComponent uids={tasks[1].uids} />
                         )}
@@ -230,15 +253,6 @@ const HomeScreen = ({navigation}: any) => {
                           size="large"
                         />
                       ) : null}
-                      {tasks[1].dueDate && (
-                        <TextComponent
-                          text={`Due ${HandleDateTime.DateString(
-                            tasks[1].dueDate.toDate(),
-                          )}`}
-                          size={12}
-                          color={colors.desc}
-                        />
-                      )}
                     </CardImageComponent>
                   )}
                   <SpaceComponent height={16} />
@@ -263,57 +277,41 @@ const HomeScreen = ({navigation}: any) => {
                       </TouchableOpacity>
                       <TitleComponent text={tasks[2].title} />
                       <TextComponent line={3} text={tasks[2].description} />
-
-                      {tasks[2].dueDate && (
-                        <TextComponent
-                          text={`Due ${HandleDateTime.DateString(
-                            tasks[2].dueDate.toDate(),
-                          )}`}
-                          size={12}
-                          color={colors.desc}
-                        />
-                      )}
                     </CardImageComponent>
                   )}
                 </View>
               </RowComponent>
             </SectionComponent>
             <SectionComponent>
-              <TextComponent
+              <TitleComponent
                 flex={1}
                 font={fontFamilies.bold}
                 size={21}
                 text="Urgents tasks"
               />
               {urgentTasks.length > 0 &&
-                urgentTasks.map((item, index) => (
+                urgentTasks.map(item => (
                   <CardComponent
-                    styles={{marginVertical: 10}}
-                    onPress={() => handleMoveToTaskDetail(item.id,
-                      index === 0
-                        ? 'rgba(113,77,217,0.9)'
-                        : index === 1
-                        ? 'rgba(33, 150, 243, 0.9)'
-                        : 'rgba(18, 118, 22, 0.9)'
-                    )}
-                    key={`urgentTask${item.id}`}>
+                    onPress={() => handleMoveToTaskDetail(item.id)}
+                    key={`urgentTask${item.id}`}
+                    styles={{marginBottom: 12}}>
                     <RowComponent>
                       <CicularComponent
-                        value={
-                          item.progress ? Math.floor(item.progress * 100) : 0
-                        }
+                        value={item.progress ? item.progress * 100 : 0}
+                        radius={40}
                       />
-                      <SpaceComponent width={42} />
-                      <TextComponent
-                        size={24}
-                        text={item.title}
-                        font={fontFamilies.bold}
-                      />
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          paddingLeft: 12,
+                        }}>
+                        <TextComponent size={18} text={item.title} font= {fontFamilies.bold} />
+                      </View>
                     </RowComponent>
                   </CardComponent>
                 ))}
-
-              <SpaceComponent height={46} />
+                <SpaceComponent height={42} />
             </SectionComponent>
           </>
         ) : (
