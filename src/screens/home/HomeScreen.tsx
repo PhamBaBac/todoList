@@ -30,6 +30,7 @@ import firestore from '@react-native-firebase/firestore';
 import {HandleDateTime} from '../../utils/handeDateTime';
 import {monthNames} from '../../constants/appInfos';
 import {add0ToNumber} from '../../utils/add0ToNumber';
+import { HandleNotification } from '../../utils/handleNotification';
 const date = new Date();
 
 const HomeScreen = ({navigation}: any) => {
@@ -40,6 +41,7 @@ const HomeScreen = ({navigation}: any) => {
 
   useEffect(() => {
     getTasks();
+    HandleNotification.checkNotificationPersion();
   }, []);
 
   useEffect(() => {
@@ -49,8 +51,9 @@ const HomeScreen = ({navigation}: any) => {
     }
   }, [tasks]);
 
-  const getTasks = () => {
+  const getTasks =  () => {
     setIsLoading(true);
+    
     firestore()
       .collection('tasks')
       .where('uids', 'array-contains', user?.uid)
