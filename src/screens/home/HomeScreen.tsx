@@ -31,6 +31,7 @@ import {HandleDateTime} from '../../utils/handeDateTime';
 import {monthNames} from '../../constants/appInfos';
 import {add0ToNumber} from '../../utils/add0ToNumber';
 import { HandleNotification } from '../../utils/handleNotification';
+import ButtonComponent from '../../components/ButtonComponent';
 const date = new Date();
 
 const HomeScreen = ({navigation}: any) => {
@@ -90,6 +91,11 @@ const HomeScreen = ({navigation}: any) => {
             <Element4 size={24} color={colors.desc} />
             <Notification size={24} color={colors.desc} />
           </RowComponent>
+        </SectionComponent>
+        <SectionComponent>
+          <ButtonComponent text='getAccessToken' onPress={()=> HandleNotification.getAccessToken()}>
+
+          </ButtonComponent>
         </SectionComponent>
         <SectionComponent>
           <RowComponent>

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import messaging from '@react-native-firebase/messaging';
-
+const serviceAccount = require('../../service-account.json');
 
 const user = auth().currentUser;
 
@@ -49,4 +49,26 @@ export class HandleNotification {
       });
   };
 
+  static getAccessToken = async () => {
+    try {
+      const res = await fetch(
+        'https://server-todolist-5jwg.onrender.com/get-accesstoken',
+        {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: serviceAccount.client_email,
+            key: serviceAccount.private_key,
+          }),
+        },
+      );
+      const result = await res.json();
+      const accessToken = result.data.access_token;
+      return accessToken;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 }
