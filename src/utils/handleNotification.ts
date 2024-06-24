@@ -72,4 +72,70 @@ export class HandleNotification {
       console.log(error);
     }
   };
+  static SendNotification = async ({
+    memberId,
+    title,
+    body,
+    taskId,
+  }: {
+    memberId: string;
+    title: string;
+    body: string;
+    taskId: string;
+  }) => {
+    try {
+      // save to firestore
+      await firestore()
+        .collection('notifications')
+        .add({
+          isRead: false,
+          createdAt: Date.now(),
+          updatedAT: Date.now(),
+          title,
+          body,
+          taskId,
+          uid: memberId,
+        })
+        .then(() => {
+          console.log('saved');
+        });
+
+      // send notification
+      const member: any = await firestore().doc(`users/${memberId}`).get();
+
+      if (member && member.data().tokens) {
+        var myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/json');
+        myHeaders.append('Authorization', `Bearer ${await this.getAccessToken()}`);
+
+        var raw = JSON.stringify({
+          registration_ids: member.data().tokens,
+          notification: {
+            title,
+            body,
+          },
+          data: {
+            taskId,
+          },
+        });
+
+        var requestOptions: any = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow',
+        };
+
+        fetch(
+          'https://fcm.googleapis.com/v1/projects/todolistapp-clone/messages:send',
+          requestOptions,
+        )
+          .then(response => response.text())
+          .then(result => console.log(result))
+          .catch(error => console.log('error', error));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 }
