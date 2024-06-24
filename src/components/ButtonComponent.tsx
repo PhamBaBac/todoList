@@ -1,30 +1,30 @@
-import {View, Text, TouchableOpacity, ActivityIndicator} from 'react-native';
-import React, {ReactNode} from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React from 'react';
 import TextComponent from './TextComponent';
-import {colors} from '../constants/colors';
+import { fontFamilies } from '../constants/fontFamilies';
+import { colors } from '../constants/colors';
 
 interface Props {
   text: string;
-  icon?: ReactNode;
+  isLoading?: boolean;
   onPress: () => void;
   color?: string;
-  isLoading?: boolean;
 }
 
 const ButtonComponent = (props: Props) => {
-  const {text, icon, onPress, color, isLoading} = props;
+  const { text, onPress, color, isLoading } = props;
 
   return (
     <TouchableOpacity
-      disabled={isLoading}
       onPress={onPress}
+      disabled={isLoading}
       style={{
-        backgroundColor: color ? color : isLoading ? colors.gray2 : colors.blue,
-        padding: 16,
-        width: '100%',
-        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        width: '100%',
+        backgroundColor: color ? color : isLoading ? colors.gray : colors.blue,
+        padding: 14,
+        borderRadius: 14,
       }}>
       {isLoading ? (
         <ActivityIndicator />
@@ -32,11 +32,13 @@ const ButtonComponent = (props: Props) => {
         <TextComponent
           text={text}
           flex={0}
+          styles={{ textTransform: 'uppercase' }}
           size={16}
-          styles={{textTransform: 'uppercase'}}
+          font={fontFamilies.semiBold}
         />
       )}
     </TouchableOpacity>
   );
 };
+
 export default ButtonComponent;

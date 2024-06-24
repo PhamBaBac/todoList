@@ -6,7 +6,7 @@ import RowComponent from '../../components/RowComponent';
 import SectionComponent from '../../components/SectionComponent';
 import TextComponent from '../../components/TextComponent';
 import TitleComponent from '../../components/TitleComponent';
-import {globalStyles} from '../../styles/globalStyles';
+import { globalStyles } from '../../styles/globalStyles';
 import {
   Add,
   Edit2,
@@ -32,6 +32,7 @@ import {monthNames} from '../../constants/appInfos';
 import {add0ToNumber} from '../../utils/add0ToNumber';
 import { HandleNotification } from '../../utils/handleNotification';
 import ButtonComponent from '../../components/ButtonComponent';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const date = new Date();
 
 const HomeScreen = ({navigation}: any) => {
@@ -80,6 +81,7 @@ const HomeScreen = ({navigation}: any) => {
     });
 
   const handleSingout = async () => {
+    await AsyncStorage.removeItem('fcmtoken');
     await auth().signOut();
   };
 
@@ -93,9 +95,9 @@ const HomeScreen = ({navigation}: any) => {
           </RowComponent>
         </SectionComponent>
         <SectionComponent>
-          <ButtonComponent text='getAccessToken' onPress={()=> HandleNotification.getAccessToken()}>
-
-          </ButtonComponent>
+          <ButtonComponent text="get Acces " onPress={() => {
+            HandleNotification.getFcmToken();
+          }}/>
         </SectionComponent>
         <SectionComponent>
           <RowComponent>
