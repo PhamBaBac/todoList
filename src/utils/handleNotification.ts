@@ -20,11 +20,11 @@ export class HandleNotification {
 
   static getFcmToken = async () => {
     const fcmtoken = await AsyncStorage.getItem('fcmtoken');
-    console.log("fcm:",fcmtoken);
+    console.log("fcm:", fcmtoken);
     if (!fcmtoken) {
       const token = await messaging().getToken();
       if (token) {
-        console.log("token",token);
+        console.log("token", token);
         await AsyncStorage.setItem('fcmtoken', token);
         this.UpdateToken(token);
       }
@@ -32,23 +32,27 @@ export class HandleNotification {
   };
 
   static UpdateToken = async (token: string) => {
-    await firestore()
-      .doc(`users/${user?.uid}`)
-      .get()
-      .then(snap => {
-        if (snap.exists) {
-          const data: any = snap.data();
+    const currentUser = auth().currentUser;
+    if (currentUser) {
+      await firestore()
+        .doc(`users/${currentUser.uid}`)
+        .get()
+        .then(snap => {
+          if (snap.exists) {
+            const data: any = snap.data();
 
-          if (!data.tokens || !data.tokens.includes(token)) {
-            firestore()
-              .doc(`users/${user?.uid}`)
-              .update({
-                tokens: firestore.FieldValue.arrayUnion(token),
-              });
+            if (!data.tokens || !data.tokens.includes(token)) {
+              firestore()
+                .doc(`users/${currentUser.uid}`)
+                .update({
+                  tokens: firestore.FieldValue.arrayUnion(token),
+                });
+            }
           }
-        }
-      });
+        });
+    }
   };
+
 
   static getAccessToken = async () => {
     try {
@@ -66,12 +70,14 @@ export class HandleNotification {
         },
       );
       const result = await res.json();
+      console.log("acss:", result)
       const accessToken = result.data.access_token;
       return accessToken;
     } catch (error) {
       console.log(error);
     }
   };
+
   static SendNotification = async ({
     memberId,
     title,
@@ -84,7 +90,7 @@ export class HandleNotification {
     taskId: string;
   }) => {
     try {
-      // save to firestore
+      // Save to Firestore
       await firestore()
         .collection('notifications')
         .add({
@@ -95,29 +101,33 @@ export class HandleNotification {
           body,
           taskId,
           uid: memberId,
-        })
-        .then(() => {
-          console.log('saved');
         });
 
-      // send notification
+      // Send Notification
       const member: any = await firestore().doc(`users/${memberId}`).get();
-
+      
       if (member && member.data().tokens) {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
         myHeaders.append('Authorization', `Bearer ${await this.getAccessToken()}`);
 
+        console.log("token:", member.data().tokens)
+        console.log("title:", title)
+
         var raw = JSON.stringify({
-          registration_ids: member.data().tokens,
-          notification: {
-            title,
-            body,
-          },
-          data: {
-            taskId,
+          message: {
+            token: member.data().tokens[0], 
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              taskId,
+            },
           },
         });
+
+        console.log('raw:', raw);
 
         var requestOptions: any = {
           method: 'POST',
@@ -126,16 +136,13 @@ export class HandleNotification {
           redirect: 'follow',
         };
 
-        fetch(
-          'https://fcm.googleapis.com/v1/projects/todolistapp-clone/messages:send',
-          requestOptions,
-        )
-          .then(response => response.text())
+        fetch('https://fcm.googleapis.com/v1/projects/todolistapp-clone/messages:send', requestOptions)
+          .then(response => response.json())
           .then(result => console.log(result))
           .catch(error => console.log('error', error));
       }
     } catch (error) {
-      console.log(error);
+      console.log('Error sending notification:', error);
     }
   };
 }

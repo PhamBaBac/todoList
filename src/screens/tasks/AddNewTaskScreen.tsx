@@ -101,57 +101,60 @@ const AddNewTask = ({navigation, route}: any) => {
     }
   }, []);
 
-    const handleAddNewTask = async () => {
-      if (user) {
-        const data = {
-          ...taskDetail,
-          attachments,
-          createdAt: task ? task.createdAt : Date.now(),
-          updatedAt: Date.now(),
-        };
+  const handleAddNewTask = async () => {
+    if (user) {
+      const data = {
+        ...taskDetail,
+        id: task ? task.id : taskDetail.id,
+        attachments: task ? task.attachments : attachments,
+        dueDate: task ? task.dueDate : taskDetail.dueDate,
+        start: task ? task.start : taskDetail.start,
+        end: task ? task.end : taskDetail.end,
+        createdAt: task ? task.createdAt : Date.now(),
+        updatedAt: Date.now()
+      };
 
-        if (task) {
-          await firestore()
-            .doc(`tasks/${task.id}`)
-            .update(data)
-            .then(() => {
-              if (usersSelect.length > 0) {
-                usersSelect.forEach(member => {
-                  member.value !== user.uid &&
-                    HandleNotification.SendNotification({
-                      title: 'Update task',
-                      body: `Your task updated by ${user?.email}`,
-                      taskId: task?.id ?? '',
-                      memberId: member.value,
-                    });
-                });
-              }
-              navigation.goBack();
-            });
-        } else {
-          await firestore()
-            .collection('tasks')
-            .add(data)
-            .then(snap => {
-              if (usersSelect.length > 0) {
-                usersSelect.forEach(member => {
-                  member.value !== user.uid &&
-                    HandleNotification.SendNotification({
-                      title: 'New task',
-                      body: `You have a new task asign by ${user?.email}`,
-                      taskId: snap.id,
-                      memberId: member.value,
-                    });
-                });
-              }
-              navigation.goBack();
-            })
-            .catch(error => console.log(error));
-        }
+      if (task) {
+        await firestore()
+          .doc(`tasks/${task.id}`)
+          .update(data)
+          .then(() => {
+            if (usersSelect.length > 0) {
+              usersSelect.forEach(member => {
+                member.value !== user.uid &&
+                  HandleNotification.SendNotification({
+                    title: 'Update task',
+                    body: `Your task updated by ${user?.email}`,
+                    taskId: task?.id ?? '',
+                    memberId: member.value,
+                  });
+              });
+            }
+            navigation.goBack();
+          });
       } else {
-        Alert.alert('You not login!!!');
+        const docRef = await firestore().collection('tasks').add(data);
+        await firestore().collection('tasks').doc(docRef.id).update({
+          id: docRef.id,
+        });
+        if (usersSelect.length > 0) {
+          usersSelect.forEach(member => {
+            member.value !== user.uid &&
+              HandleNotification.SendNotification({
+                title: 'New task added',
+                body: `A new task added by ${user?.email}`,
+                taskId: docRef.id,
+                memberId: member.value,
+              });
+          });
+        }
+
+        navigation.goBack();
       }
-    };
+    } else {
+      Alert.alert('You are not logged in!');
+    }
+  };
 
   return (
     <Container back title="Add new task" isScroll>
@@ -179,6 +182,7 @@ const AddNewTask = ({navigation, route}: any) => {
           placeholder="Choice"
           type="date"
           title="Due date"
+
         />
 
         <RowComponent>

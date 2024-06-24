@@ -81,9 +81,47 @@ const HomeScreen = ({navigation}: any) => {
     });
 
   const handleSingout = async () => {
+    const token = await AsyncStorage.getItem('fcmtoken'); // Retrieve token from AsyncStorage
+
+    // Remove token from AsyncStorage
     await AsyncStorage.removeItem('fcmtoken');
+
+    // Remove token from Firestore
+    const currentUser = auth().currentUser;
+    if (currentUser) {
+      await firestore()
+        .doc(`users/${currentUser.uid}`)
+        .get()
+        .then(snap => {
+          if (snap.exists) {
+            const data: any = snap.data();
+            if (data.tokens && data.tokens.includes(token)) {
+              firestore()
+                .doc(`users/${currentUser.uid}`)
+                .update({
+                  tokens: firestore.FieldValue.arrayRemove(token),
+                })
+                .then(() => {
+                  console.log('Token removed from Firestore');
+                })
+                .catch(error => {
+                  console.error('Error removing token from Firestore:', error);
+                });
+            } else {
+              console.log('Token not found in Firestore');
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error getting document:', error);
+        });
+    }
+
+    // Sign out the user
     await auth().signOut();
   };
+
+
 
   return (
     <View style={{flex: 1}}>
@@ -96,7 +134,7 @@ const HomeScreen = ({navigation}: any) => {
         </SectionComponent>
         <SectionComponent>
           <ButtonComponent text="get Acces " onPress={() => {
-            HandleNotification.getFcmToken();
+            HandleNotification.getAccessToken();
           }}/>
         </SectionComponent>
         <SectionComponent>
