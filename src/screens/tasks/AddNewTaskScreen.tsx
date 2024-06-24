@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, PermissionsAndroid, Platform, View} from 'react-native';
+import {Alert, Button, PermissionsAndroid, Platform, View} from 'react-native';
 import Container from '../../components/Container';
 import DateTimePickerComponent from '../../components/DateTimePickerComponent';
 import InputComponent from '../../components/InputComponent';
@@ -17,6 +17,7 @@ import UploadFileComponent from '../../components/UploadFileComponent';
 import {calcFileSize} from '../../utils/calcFileSize';
 import auth from '@react-native-firebase/auth';
 import {create} from 'react-test-renderer';
+import { HandleNotification } from '../../utils/handleNotification';
 
 const initValue: TaskModel = {
   id: '',
@@ -100,36 +101,57 @@ const AddNewTask = ({navigation, route}: any) => {
     }
   }, []);
 
-  const handleAddNewTask = async () => {
-    if (user) {
-      const data = {
-        ...taskDetail,
-        id: task ? task.id : taskDetail.id,
-        attachments: task ? task.attachments : attachments,
-        dueDate: task ? task.dueDate : taskDetail.dueDate,
-        start: task ? task.start : taskDetail.start,
-        end: task ? task.end : taskDetail.end,
-        createdAt: task ? task.createdAt : Date.now(),
-        updatedAt: Date.now()
-      };
-       
-      if (task) {
-        await firestore()
-          .doc(`tasks/${task.id}`)
-          .update(data)
-          .then(() => {
-            console.log('Update task success');
-            navigation.goBack();
-          });
+    const handleAddNewTask = async () => {
+      if (user) {
+        const data = {
+          ...taskDetail,
+          attachments,
+          createdAt: task ? task.createdAt : Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        if (task) {
+          await firestore()
+            .doc(`tasks/${task.id}`)
+            .update(data)
+            .then(() => {
+              if (usersSelect.length > 0) {
+                usersSelect.forEach(member => {
+                  member.value !== user.uid &&
+                    HandleNotification.SendNotification({
+                      title: 'Update task',
+                      body: `Your task updated by ${user?.email}`,
+                      taskId: task?.id ?? '',
+                      memberId: member.value,
+                    });
+                });
+              }
+              navigation.goBack();
+            });
+        } else {
+          await firestore()
+            .collection('tasks')
+            .add(data)
+            .then(snap => {
+              if (usersSelect.length > 0) {
+                usersSelect.forEach(member => {
+                  member.value !== user.uid &&
+                    HandleNotification.SendNotification({
+                      title: 'New task',
+                      body: `You have a new task asign by ${user?.email}`,
+                      taskId: snap.id,
+                      memberId: member.value,
+                    });
+                });
+              }
+              navigation.goBack();
+            })
+            .catch(error => console.log(error));
+        }
       } else {
-        const docRef = await firestore().collection('tasks').add(data);
-        await firestore().collection('tasks').doc(docRef.id).update({
-          id: docRef.id,
-        });
-        navigation.goBack();
+        Alert.alert('You not login!!!');
       }
-    }
-  };
+    };
 
   return (
     <Container back title="Add new task" isScroll>
