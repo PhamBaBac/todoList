@@ -1,5 +1,3 @@
-<img width="398" alt="Screenshot 2024-08-04 at 11 17 46" src="https://github.com/user-attachments/assets/b2dc4620-b3df-434a-adf8-7633734e689c"># To-Do List App
-
 ## Mô tả
 To-Do List App là một ứng dụng giúp bạn quản lý các công việc cần làm hàng ngày một cách dễ dàng và hiệu quả.
 
