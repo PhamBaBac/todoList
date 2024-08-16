@@ -1,5 +1,5 @@
-import {View, Text, Modal, FlatList, TouchableOpacity} from 'react-native';
 import React, {useEffect, useState} from 'react';
+import {View, Text, Modal, FlatList, TouchableOpacity} from 'react-native';
 import {SelectModel} from '../models/SelectModel';
 import TitleComponent from './TitleComponent';
 import RowComponent from './RowComponent';
@@ -24,25 +24,26 @@ const DropdownPicker = (props: Props) => {
   const {title, items, selected, onSelect, multiple} = props;
 
   const [isVisible, setIsVisible] = useState(false);
-  const [searckKey, setSearckKey] = useState('');
+  const [searchKey, setSearchKey] = useState('');
   const [results, setResults] = useState<SelectModel[]>([]);
   const [dataSelected, setDataSelected] = useState<string[]>([]);
+  console.log('dataSelected', dataSelected);
 
   useEffect(() => {
     selected && setDataSelected(selected);
   }, [isVisible, selected]);
 
   useEffect(() => {
-    if (!searckKey) {
+    if (!searchKey) {
       setResults([]);
     } else {
       const data = items.filter(element =>
-        element.label.toLowerCase().includes(searckKey.toLowerCase()),
+        element.label.toLowerCase().includes(searchKey.toLowerCase()),
       );
 
       setResults(data);
     }
-  }, [searckKey]);
+  }, [searchKey]);
 
   const handleSelectItem = (id: string) => {
     if (multiple) {
@@ -63,17 +64,14 @@ const DropdownPicker = (props: Props) => {
 
   const handleConfirmSelect = () => {
     onSelect(dataSelected);
-
     setIsVisible(false);
-    setDataSelected([]);
   };
 
   const handleRemoveItemSelected = (index: number) => {
-    if (selected) {
-      selected.splice(index, 1);
-
-      onSelect(selected);
-    }
+    const data = [...dataSelected];
+    data.splice(index, 1);
+    setDataSelected(data);
+    onSelect(data);
   };
 
   const renderSelectedItem = (id: string, index: number) => {
@@ -110,9 +108,9 @@ const DropdownPicker = (props: Props) => {
           {marginTop: title ? 8 : 0, paddingVertical: 16},
         ]}>
         <View style={{flex: 1, paddingRight: 12}}>
-          {selected && selected?.length > 0 ? (
+          {dataSelected.length > 0 ? (
             <RowComponent justify="flex-start" styles={{flexWrap: 'wrap'}}>
-              {selected.map((id, index) => renderSelectedItem(id, index))}
+              {dataSelected.map((id, index) => renderSelectedItem(id, index))}
             </RowComponent>
           ) : (
             <TextComponent text="Select" color={colors.gray2} flex={0} />
@@ -143,8 +141,8 @@ const DropdownPicker = (props: Props) => {
                 styles={{alignItems: 'center', justifyContent: 'center'}}>
                 <View style={{flex: 1, marginRight: 12}}>
                   <InputComponent
-                    value={searckKey}
-                    onChange={val => setSearckKey(val)}
+                    value={searchKey}
+                    onChange={val => setSearchKey(val)}
                     placeholder="Search..."
                     prefix={<SearchNormal1 size={22} color={colors.gray2} />}
                     allowClear
@@ -156,7 +154,7 @@ const DropdownPicker = (props: Props) => {
               </RowComponent>
             }
             style={{flex: 1}}
-            data={searckKey ? results : items}
+            data={searchKey ? results : items}
             renderItem={({item}) => (
               <RowComponent
                 onPress={() => handleSelectItem(item.value)}
@@ -175,7 +173,7 @@ const DropdownPicker = (props: Props) => {
               </RowComponent>
             )}
           />
-          <ButtonComponent text="Comfirm" onPress={handleConfirmSelect} />
+          <ButtonComponent text="Confirm" onPress={handleConfirmSelect} />
         </View>
       </Modal>
     </View>

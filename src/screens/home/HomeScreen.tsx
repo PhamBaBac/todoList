@@ -1,12 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, Task, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  Task,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import CardComponent from '../../components/CardComponent';
 import Container from '../../components/Container';
 import RowComponent from '../../components/RowComponent';
 import SectionComponent from '../../components/SectionComponent';
 import TextComponent from '../../components/TextComponent';
 import TitleComponent from '../../components/TitleComponent';
-import { globalStyles } from '../../styles/globalStyles';
+import {globalStyles} from '../../styles/globalStyles';
 import {
   Add,
   Edit2,
@@ -30,9 +36,12 @@ import firestore from '@react-native-firebase/firestore';
 import {HandleDateTime} from '../../utils/handeDateTime';
 import {monthNames} from '../../constants/appInfos';
 import {add0ToNumber} from '../../utils/add0ToNumber';
-import { HandleNotification } from '../../utils/handleNotification';
+import {HandleNotification} from '../../utils/handleNotification';
 import ButtonComponent from '../../components/ButtonComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+import {Link, useLinkTo} from '@react-navigation/native';
+import {NotificationModel} from '../../models/NotificationModel';
 const date = new Date();
 
 const HomeScreen = ({navigation}: any) => {
@@ -40,10 +49,31 @@ const HomeScreen = ({navigation}: any) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskModel[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<TaskModel[]>([]);
+  const [notification, setNotification] = useState<NotificationModel[]>([]);
+  const linkTo = useLinkTo();
 
   useEffect(() => {
     getTasks();
     HandleNotification.checkNotificationPersion();
+  }, []);
+  useEffect(() => {
+    messaging().onMessage((mess: any) => {
+      // getNofiticationsUnRead;
+      console.log('mess:', mess);
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then((mess: any) => {
+        if (mess && mess.data) {
+          const data = mess.data;
+          const taskId = data.taskId;
+          linkTo(`/task-detail/${taskId}`);
+        }
+      })
+      .catch(error => {
+        console.error('Error getting initial notification:', error);
+      });
   }, []);
 
   useEffect(() => {
@@ -52,10 +82,22 @@ const HomeScreen = ({navigation}: any) => {
       setUrgentTasks(urgent);
     }
   }, [tasks]);
+  useEffect(() => {
+    handlInitiaUrl();
+  },[])
 
-  const getTasks =  () => {
+  const handlInitiaUrl = async () => {
+    const url = await Linking.getInitialURL();
+    if(url){
+      Linking.canOpenURL(url).then(
+        isCanOpen => isCanOpen ? Linking.openURL(url) : console.log('Cannot open url')
+      )
+    }
+  }
+
+  const getTasks = () => {
     setIsLoading(true);
-    
+
     firestore()
       .collection('tasks')
       .where('uids', 'array-contains', user?.uid)
@@ -74,6 +116,24 @@ const HomeScreen = ({navigation}: any) => {
       });
   };
 
+  const getNofiticationsUnRead = () => {
+    firestore()
+      .collection('notifications')
+      .where('isRead', '==', false)
+      .onSnapshot(snap => {
+        if (snap && !snap.empty) {
+          const items: NotificationModel[] = [];
+          snap.forEach((item: any) => {
+            items.push({
+              id: item.id,
+              ...item.data(),
+            });
+          });
+          setNotification(items.sort((a, b) => b.createdAt - a.createdAt));
+        }
+      });
+  };
+
   const handleMoveToTaskDetail = (id?: string, color?: string) =>
     navigation.navigate('TaskDetail', {
       id,
@@ -82,11 +142,6 @@ const HomeScreen = ({navigation}: any) => {
 
   const handleSingout = async () => {
     const token = await AsyncStorage.getItem('fcmtoken'); // Retrieve token from AsyncStorage
-
-    // Remove token from AsyncStorage
-    await AsyncStorage.removeItem('fcmtoken');
-
-    // Remove token from Firestore
     const currentUser = auth().currentUser;
     if (currentUser) {
       await firestore()
@@ -116,12 +171,16 @@ const HomeScreen = ({navigation}: any) => {
           console.error('Error getting document:', error);
         });
     }
+    await auth().signOut();
+
+
+    // Remove token from AsyncStorage
+    await AsyncStorage.removeItem('fcmtoken');
+
+    // Remove token from Firestore
 
     // Sign out the user
-    await auth().signOut();
   };
-
-
 
   return (
     <View style={{flex: 1}}>
@@ -129,13 +188,26 @@ const HomeScreen = ({navigation}: any) => {
         <SectionComponent>
           <RowComponent justify="space-between">
             <Element4 size={24} color={colors.desc} />
-            <Notification size={24} color={colors.desc} />
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Notification')}>
+              <Notification size={24} color={colors.desc} />
+              {notification.length > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: 10,
+                    height: 10,
+                    borderRadius: 10,
+                    backgroundColor: 'red',
+                    borderColor: colors.white,
+                    borderWidth: 1,
+                  }}
+                />
+              )}
+            </TouchableOpacity>
           </RowComponent>
-        </SectionComponent>
-        <SectionComponent>
-          <ButtonComponent text="get Acces " onPress={() => {
-            HandleNotification.getAccessToken();
-          }}/>
         </SectionComponent>
         <SectionComponent>
           <RowComponent>
@@ -242,7 +314,7 @@ const HomeScreen = ({navigation}: any) => {
                       </TouchableOpacity>
                       <TitleComponent text={tasks[0].title} />
                       <TextComponent line={3} text={tasks[0].description} />
-                      <View style={{paddingTop: 26}}>
+                      <View style={{paddingTop: 26, marginHorizontal: 10}}>
                         <AvatarGroupComponent uids={tasks[0].uids} />
                       </View>
                       {tasks[0].progress &&
@@ -288,7 +360,7 @@ const HomeScreen = ({navigation}: any) => {
                         <Edit2 size={20} color={colors.white} />
                       </TouchableOpacity>
                       <TextComponent line={3} text={tasks[1].description} />
-                      <View style={{paddingTop: 18}}>
+                      <View style={{paddingTop: 18, marginHorizontal: 10}}>
                         {tasks[1].uids && (
                           <AvatarGroupComponent uids={tasks[1].uids} />
                         )}
@@ -346,7 +418,9 @@ const HomeScreen = ({navigation}: any) => {
                     styles={{marginBottom: 12}}>
                     <RowComponent>
                       <CicularComponent
-                        value={item.progress ? item.progress * 100 : 0}
+                        value={
+                          item.progress ? Math.round(item.progress * 100) : 0
+                        }
                         radius={40}
                       />
                       <View
@@ -355,12 +429,16 @@ const HomeScreen = ({navigation}: any) => {
                           justifyContent: 'center',
                           paddingLeft: 12,
                         }}>
-                        <TextComponent size={18} text={item.title} font= {fontFamilies.bold} />
+                        <TextComponent
+                          size={18}
+                          text={item.title}
+                          font={fontFamilies.bold}
+                        />
                       </View>
                     </RowComponent>
                   </CardComponent>
                 ))}
-                <SpaceComponent height={42} />
+              <SpaceComponent height={42} />
             </SectionComponent>
           </>
         ) : (

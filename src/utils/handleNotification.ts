@@ -4,6 +4,7 @@ import firestore from '@react-native-firebase/firestore';
 import messaging from '@react-native-firebase/messaging';
 const serviceAccount = require('../../service-account.json');
 
+
 const user = auth().currentUser;
 
 export class HandleNotification {
@@ -18,13 +19,13 @@ export class HandleNotification {
     }
   };
 
+
   static getFcmToken = async () => {
     const fcmtoken = await AsyncStorage.getItem('fcmtoken');
-    console.log("fcm:", fcmtoken);
+    console.log("fcmtoken:", fcmtoken)
     if (!fcmtoken) {
       const token = await messaging().getToken();
       if (token) {
-        console.log("token", token);
         await AsyncStorage.setItem('fcmtoken', token);
         this.UpdateToken(token);
       }
@@ -67,10 +68,10 @@ export class HandleNotification {
             email: serviceAccount.client_email,
             key: serviceAccount.private_key,
           }),
+          
         },
       );
       const result = await res.json();
-      console.log("acss:", result)
       const accessToken = result.data.access_token;
       return accessToken;
     } catch (error) {
@@ -105,18 +106,17 @@ export class HandleNotification {
 
       // Send Notification
       const member: any = await firestore().doc(`users/${memberId}`).get();
+      console.log("member:", member)
       
       if (member && member.data().tokens) {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
         myHeaders.append('Authorization', `Bearer ${await this.getAccessToken()}`);
 
-        console.log("token:", member.data().tokens)
-        console.log("title:", title)
 
         var raw = JSON.stringify({
           message: {
-            token: member.data().tokens[0], 
+            token: member.data().tokens[member.data().tokens.length - 1],
             notification: {
               title,
               body,
@@ -127,7 +127,6 @@ export class HandleNotification {
           },
         });
 
-        console.log('raw:', raw);
 
         var requestOptions: any = {
           method: 'POST',

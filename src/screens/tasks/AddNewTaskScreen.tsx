@@ -36,9 +36,10 @@ const initValue: TaskModel = {
 const AddNewTask = ({navigation, route}: any) => {
   const user = auth().currentUser;
   const {editable, task}: {editable: boolean; task?: TaskModel} = route.params;
-
-  const [taskDetail, setTaskDetail] = useState<TaskModel>(initValue);
+  const uids : string[] = task ? task.uids : [];
+  console.log("uids:", uids)
   const [usersSelect, setUsersSelect] = useState<SelectModel[]>([]);
+  const [taskDetail, setTaskDetail] = useState<TaskModel>(initValue);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
@@ -119,14 +120,14 @@ const AddNewTask = ({navigation, route}: any) => {
           .doc(`tasks/${task.id}`)
           .update(data)
           .then(() => {
-            if (usersSelect.length > 0) {
-              usersSelect.forEach(member => {
-                member.value !== user.uid &&
+            if (uids.length > 0) {
+              uids.forEach(member => {
+                member !== user.uid &&
                   HandleNotification.SendNotification({
-                    title: 'Update task',
-                    body: `Your task updated by ${user?.email}`,
-                    taskId: task?.id ?? '',
-                    memberId: member.value,
+                    title: 'Task updated',
+                    body: `A task updated by ${user?.email}`,
+                    taskId: task.id,
+                    memberId: member,
                   });
               });
             }
@@ -137,15 +138,16 @@ const AddNewTask = ({navigation, route}: any) => {
         await firestore().collection('tasks').doc(docRef.id).update({
           id: docRef.id,
         });
-        if (usersSelect.length > 0) {
-          usersSelect.forEach(member => {
-            member.value !== user.uid &&
+        if (uids.length > 0) {
+          uids.forEach(member => {
+            member !== user.uid &&
               HandleNotification.SendNotification({
                 title: 'New task added',
                 body: `A new task added by ${user?.email}`,
                 taskId: docRef.id,
-                memberId: member.value,
+                memberId: member,
               });
+              console.log("member:", member)
           });
         }
 

@@ -182,6 +182,7 @@ const TaskDetail = ({navigation, route}: any) => {
             paddingBottom: 18,
             borderBottomLeftRadius: 20,
             borderBottomRightRadius: 20,
+            backgroundColor: color ?? 'rgba(113, 77, 217, 0.9)',
           }}>
           <RowComponent styles={{alignItems: 'center'}}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -246,120 +247,121 @@ const TaskDetail = ({navigation, route}: any) => {
             </RowComponent>
           </View>
         </SectionComponent>
-        <SectionComponent>
-          <TitleComponent text="Description" size={22} />
-          <CardComponent
-            bgColor={colors.bgColor}
-            styles={{
-              borderWidth: 1,
-              borderColor: colors.gray,
-              borderRadius: 12,
-              marginTop: 12,
-            }}>
-            <TextComponent
-              text={taskDetail.description}
-              styles={{textAlign: 'justify'}}
-            />
-          </CardComponent>
-        </SectionComponent>
-        <SectionComponent>
-          <RowComponent onPress={handleUpdateUrgentState}>
-            <TickSquare
-              variant={isUrgent ? 'Bold' : 'Outline'}
-              size={24}
-              color={colors.white}
-            />
-            <SpaceComponent width={8} />
-            <TextComponent
-              flex={1}
-              text={`Is Urgent`}
-              font={fontFamilies.bold}
-              size={18}
-            />
-          </RowComponent>
-        </SectionComponent>
-        <SectionComponent>
-          <CardComponent>
-            <RowComponent>
-              <TextComponent text="Files & Links" flex={1} />
-              <RowComponent>
-                <UploadFileComponent
-                  onUpload={file =>
-                    file && setAttachments([...attachments, file])
-                  }
-                />
-              </RowComponent>
-            </RowComponent>
-            {attachments.map((item, index) => (
-              <View
-                style={{justifyContent: 'flex-start', marginBottom: 8}}
-                key={`attachment${index}`}>
-                <TextComponent flex={0} text={item.name} />
-                <TextComponent
-                  flex={0}
-                  text={calcFileSize(item.size)}
-                  size={12}
-                />
-              </View>
-            ))}
-          </CardComponent>
-        </SectionComponent>
-        <SectionComponent>
-          <RowComponent>
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 100,
-                borderWidth: 2,
-                borderColor: colors.success,
-                marginRight: 4,
-                justifyContent: 'center',
-                alignItems: 'center',
+        <View style={{marginHorizontal: 20}}>
+          <SectionComponent>
+            <TitleComponent text="Description" size={22} />
+            <CardComponent
+              bgColor={colors.bgColor}
+              styles={{
+                borderWidth: 1,
+                borderColor: colors.gray,
+                borderRadius: 12,
+                marginTop: 12,
               }}>
+              <TextComponent
+                text={taskDetail.description}
+                styles={{textAlign: 'justify'}}
+              />
+            </CardComponent>
+          </SectionComponent>
+          <SectionComponent>
+            <RowComponent onPress={handleUpdateUrgentState}>
+              <TickSquare
+                variant={isUrgent ? 'Bold' : 'Outline'}
+                size={24}
+                color={colors.white}
+              />
+              <SpaceComponent width={8} />
+              <TextComponent
+                flex={1}
+                text={`Is Urgent`}
+                font={fontFamilies.bold}
+                size={18}
+              />
+            </RowComponent>
+          </SectionComponent>
+          <SectionComponent>
+            <CardComponent>
+              <RowComponent>
+                <TextComponent text="Files & Links" flex={1} />
+                <RowComponent>
+                  <UploadFileComponent
+                    onUpload={file =>
+                      file && setAttachments([...attachments, file])
+                    }
+                  />
+                </RowComponent>
+              </RowComponent>
+              {attachments.map((item, index) => (
+                <View
+                  style={{justifyContent: 'flex-start', marginBottom: 8}}
+                  key={`attachment${index}`}>
+                  <TextComponent flex={0} text={item.name} />
+                  <TextComponent
+                    flex={0}
+                    text={calcFileSize(item.size)}
+                    size={12}
+                  />
+                </View>
+              ))}
+            </CardComponent>
+          </SectionComponent>
+          <SectionComponent>
+            <RowComponent>
               <View
                 style={{
-                  backgroundColor: colors.success,
-                  width: 16,
-                  height: 16,
+                  width: 24,
+                  height: 24,
                   borderRadius: 100,
-                }}
-              />
-            </View>
-            <TextComponent
-              flex={1}
-              text="Progress"
-              font={fontFamilies.medium}
-              size={18}
-            />
-          </RowComponent>
-          <SpaceComponent height={12} />
-          <RowComponent>
-            <View style={{flex: 1}}>
-              <Slider
-                disabled
-                value={progress}
-                onValueChange={val => setProgress(val[0])}
-                thumbTintColor={colors.success}
-                thumbStyle={{
                   borderWidth: 2,
-                  borderColor: colors.white,
-                }}
-                maximumTrackTintColor={colors.gray2}
-                minimumTrackTintColor={colors.success}
-                trackStyle={{height: 10, borderRadius: 100}}
+                  borderColor: colors.success,
+                  marginRight: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <View
+                  style={{
+                    backgroundColor: colors.success,
+                    width: 16,
+                    height: 16,
+                    borderRadius: 100,
+                  }}
+                />
+              </View>
+              <TextComponent
+                flex={1}
+                text="Progress"
+                font={fontFamilies.medium}
+                size={18}
               />
-            </View>
-            <SpaceComponent width={20} />
-            <TextComponent
-              text={`${Math.floor(progress * 100)}%`}
-              font={fontFamilies.bold}
-              size={18}
-              flex={0}
-            />
-          </RowComponent>
-        </SectionComponent>
-        <SectionComponent>
+            </RowComponent>
+            <SpaceComponent height={12} />
+            <RowComponent>
+              <View style={{flex: 1}}>
+                <Slider
+                  disabled
+                  value={progress}
+                  onValueChange={val => setProgress(val[0])}
+                  thumbTintColor={colors.success}
+                  thumbStyle={{
+                    borderWidth: 2,
+                    borderColor: colors.white,
+                  }}
+                  maximumTrackTintColor={colors.gray2}
+                  minimumTrackTintColor={colors.success}
+                  trackStyle={{height: 10, borderRadius: 100}}
+                />
+              </View>
+              <SpaceComponent width={20} />
+              <TextComponent
+                text={`${Math.floor(progress * 100)}%`}
+                font={fontFamilies.bold}
+                size={18}
+                flex={0}
+              />
+            </RowComponent>
+          </SectionComponent>
+           <SectionComponent>
           <RowComponent>
             <TitleComponent flex={1} text="Sub tasks" size={20} />
             <TouchableOpacity
@@ -396,6 +398,9 @@ const TaskDetail = ({navigation, route}: any) => {
               </CardComponent>
             ))}
         </SectionComponent>
+        </View>
+
+       
         <SectionComponent>
           <RowComponent onPress={handleRemoveTask}>
             <TextComponent text="Delete task" color="red" flex={0} />
